@@ -9,7 +9,7 @@ override_dh_auto_test:
 
 override_dh_fixperms:
 	dh_fixperms
-	chmod 0755 debian/tres/usr/bin/tres-synaptic debian/tres/usr/lib/tres/tres-synaptic.sh
+	chmod 0755 debian/tres/usr/bin/tres-synaptic debian/tres/usr/lib/tres/tres-synaptic.sh debian/tres/usr/bin/tres-search
 
 override_dh_python3:
 	dh_python3 /usr/share/tres
