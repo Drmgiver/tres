@@ -22,7 +22,7 @@ cp -a -- "$old" "$new"
 autostart="$new/labwc/autostart"
 if [[ -f "$autostart" ]]; then
     if command -v dpkg-query >/dev/null 2>&1 &&
-       dpkg-query -W -f='\${Status}' tres 2>/dev/null | grep -q 'install ok installed'; then
+       dpkg-query -W -f='${Status}' tres 2>/dev/null | grep -q 'install ok installed'; then
         # The package-managed panel lives in /usr/bin.
         sed -i 's|"$HOME/.local/bin/tres-panel"|/usr/bin/tres-panel|g' "$autostart"
     fi
