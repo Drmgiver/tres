@@ -12,10 +12,10 @@ Vcs-Browser: https://github.com/Drmgiver/Tres
 Package: tres
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, python3, python3-gi,
- gir1.2-gtk-3.0, gir1.2-gtklayershell-0.1, labwc, wlrctl, foot, swaybg, grim, slurp
+ gir1.2-gtk-3.0, gir1.2-gtklayershell-0.1, labwc, wlrctl, foot, swaybg, grim, slurp, wlr-randr
 Breaks: tres-labwc (<< 0.2~)
 Replaces: tres-labwc (<< 0.2~)
-Suggests: wlr-randr, pavucontrol, network-manager-gnome, blueman
+Suggests: pavucontrol, network-manager-gnome, blueman, thunar
 Description: three-square minimalist desktop session for Wayland
  Tres is an ultra-minimal desktop interface based on the Labwc Wayland
  compositor. Three small white squares provide an application menu, a
@@ -24,6 +24,9 @@ Description: three-square minimalist desktop session for Wayland
  .
  Includes Tres Screenshot, a minimal GUI for full-screen and selected-area
  captures powered by Grim and Slurp.
+ .
+ Includes a GTK3 preferences tool for Tres appearance, display scaling,
+ Labwc shortcuts, and XDG default applications.
  .
  Installing this package adds Tres as an optional login session.
  Existing desktop environments remain installed.
