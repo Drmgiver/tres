@@ -22,5 +22,5 @@ Description: three-square minimalist desktop session for Wayland
  window selector, and system applets. Windows can cover the squares and
  no taskbar or full-width panel is shown.
  .
- Installing this package adds Tres (Labwc) as an optional login session.
+ Installing this package adds Tres as an optional login session.
  Existing desktop environments remain installed.
