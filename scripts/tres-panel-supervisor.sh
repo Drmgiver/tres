@@ -1,4 +1,5 @@
 #!/bin/sh
+# Tres-managed launcher
 # Keep the three-square panel available while its Wayland compositor exists.
 set -u
 umask 077
