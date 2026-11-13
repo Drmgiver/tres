@@ -14,8 +14,13 @@ def named_call(stmt):
     if not isinstance(stmt, ast.Expr) or not isinstance(stmt.value, ast.Call):
         return None
     func = stmt.value.func
-    if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
-        return f"{func.value.id}.{func.attr}"
+    parts = []
+    while isinstance(func, ast.Attribute):
+        parts.append(func.attr)
+        func = func.value
+    if isinstance(func, ast.Name):
+        parts.append(func.id)
+        return ".".join(reversed(parts))
     return None
 
 
