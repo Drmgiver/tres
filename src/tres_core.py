@@ -46,3 +46,31 @@ def activate(window: Toplevel, timeout: float = 3.0) -> None:
                           text=True, timeout=timeout, check=False)
     if proc.returncode:
         raise RuntimeError((proc.stderr or "Unable to activate window").strip())
+
+
+# Only these explicitly approved host power actions may be requested.
+POWER_COMMANDS = {
+    "restart": "reboot",
+    "shutdown": "poweroff",
+}
+
+
+def request_power_action(action: str, timeout: float = 15.0) -> None:
+    """Request a normal logind-managed reboot or poweroff, without sudo.
+
+    Caller must obtain explicit user confirmation first. Never use `--force`:
+    systemd/logind should handle active sessions, inhibitors and permissions.
+    """
+    if action not in POWER_COMMANDS:
+        raise ValueError(f"Unsupported power action: {action}")
+    try:
+        result = subprocess.run(
+            ["systemctl", POWER_COMMANDS[action]],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise RuntimeError(f"Could not request {action}: {error}") from error
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or
+                  "The system refused the power request").strip()
+        raise RuntimeError(detail)
