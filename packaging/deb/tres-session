@@ -74,4 +74,5 @@ add_restart_action(directory / "menu.xml", "/usr/bin/tres-panel-control restart"
 PY
 # Set up the optional search binding once for existing packaged installations.
 TRES_MODULE_DIR=/usr/share/tres /bin/bash /usr/lib/tres/install-search-shortcut.sh
+TRES_MODULE_DIR=/usr/share/tres /bin/bash /usr/lib/tres/install-panel-drag.sh
 exec /usr/lib/tres/tres-session.sh "$@"
