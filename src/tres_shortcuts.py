@@ -16,7 +16,7 @@ MARKED = re.compile(r"(?s)<!-- BEGIN TRES SHORTCUTS -->.*?<!-- END TRES SHORTCUT
 KEY_PATTERN = re.compile(r"(?:(?:W|A|C|S)-)*[A-Za-z0-9_]+\Z")
 DEFAULT_KEYS = {"screenshot": "Print", "files": "W-e", "terminal": "W-Return"}
 COMMANDS = {"screenshot": "tres-screenshot", "files": "tres-open-files",
-            "terminal": "foot"}
+            "terminal": "tres-open-terminal"}
 
 
 def rc_path() -> Path:
@@ -24,8 +24,6 @@ def rc_path() -> Path:
 
 
 def executable(name: str) -> str:
-    if name == "foot":
-        return "foot"
     local = Path.home() / ".local/bin" / name
     if local.is_file() and os.access(local, os.X_OK):
         return str(local)
@@ -52,7 +50,7 @@ def read_shortcuts(path: Path | None = None) -> dict[str, str]:
             continue
         command = action.get("command", "")
         for name, binary in COMMANDS.items():
-            if command == "foot" and name == "terminal" or command.endswith("/" + binary) and name != "terminal":
+            if command.endswith("/" + binary):
                 found[name] = bind.get("key", "")
     return found
 
