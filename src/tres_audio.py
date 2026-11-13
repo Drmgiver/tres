@@ -59,7 +59,7 @@ def volume_label() -> str:
         if proc.returncode:
             return "Volume: unavailable"
         if backend == "wpctl":
-            match = re.search(r"Volume:\\s*([0-9]+(?:\\.[0-9]+)?)", proc.stdout)
+            match = re.search(r"Volume:\s*([0-9]+(?:\.[0-9]+)?)", proc.stdout)
             if not match:
                 return "Volume: unavailable"
             level = round(float(match.group(1)) * 100)
@@ -73,7 +73,7 @@ def volume_label() -> str:
                                   capture_output=True, text=True, timeout=3,
                                   check=False)
             muted = mute.returncode == 0 and bool(re.search(
-                r"Mute:\\s*yes", mute.stdout, re.IGNORECASE))
+                r"Mute:\s*yes", mute.stdout, re.IGNORECASE))
         return f"Volume: {level}%" + (" (muted)" if muted else "")
     except (OSError, subprocess.TimeoutExpired, ValueError):
         return "Volume: unavailable"
