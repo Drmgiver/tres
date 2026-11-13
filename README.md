@@ -79,6 +79,17 @@ Display tab should list your connected output, report its current scale, and
 enable **Apply display scale** when an output is selected. Scaling changes
 continue to be saved only in Tres's private Labwc autostart configuration.
 
+## Free panel placement
+
+Tres positions the **middle white square** on the centerline of the chosen
+screen edge. In **Reconfigure Tres → Appearance**, choose Top, Bottom, Left
+or Right and adjust the X/Y pixel offsets. Hold **Super** and left-drag one
+of the three squares to move the group; its offset is saved across sessions.
+The original under/over/reserved stacking choices remain separate from
+placement. Use **Reset position to top center** in Appearance to restore
+the original position. Full-screen positions are constrained so the three
+squares remain visible.
+
 ## Reconfigure Tres
 
 Choose **Reconfigure Tres** from the desktop right-click menu or the rightmost
