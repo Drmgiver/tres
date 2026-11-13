@@ -24,7 +24,8 @@ trap cleanup EXIT
 export XDG_RUNTIME_DIR="$TMP/runtime"
 mkdir -p "$XDG_RUNTIME_DIR" "$TMP/config"
 chmod 0700 "$XDG_RUNTIME_DIR"
-export WAYLAND_DISPLAY=tres-test-wl
+unset WAYLAND_DISPLAY
+export GDK_BACKEND=wayland
 export WLR_BACKENDS=headless
 export WLR_RENDERER=pixman
 export WLR_HEADLESS_OUTPUTS=1
@@ -39,10 +40,14 @@ LABWC_PID=$!
 
 ready=false
 for _ in $(seq 1 50); do
-    if [[ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
-        ready=true
-        break
-    fi
+    for candidate in "$XDG_RUNTIME_DIR"/wayland-*; do
+        if [[ -S "$candidate" ]]; then
+            export WAYLAND_DISPLAY="${candidate##*/}"
+            ready=true
+            break
+        fi
+    done
+    [[ "$ready" == true ]] && break
     kill -0 "$LABWC_PID" 2>/dev/null || break
     sleep 0.2
 done
