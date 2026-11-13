@@ -10,6 +10,7 @@ from collections import Counter
 from tres_display import DisplayError, apply_scale, output_info
 from tres_open import file_manager_choices
 from tres_layout import MODES, read_mode, save_mode
+from tres_position import EDGES, read_position, save_position
 from tres_preferences import (DEFAULT_APPEARANCE, TERMINALS, read_appearance,
                               read_terminal, save_appearance, save_terminal)
 from tres_shortcuts import DEFAULT_KEYS, read_shortcuts, reload_labwc, save_shortcuts
@@ -131,6 +132,34 @@ def main() -> None:
         mode_buttons[key] = button
     mode_buttons[read_mode()].set_active(True)
 
+    placement = read_position()
+    appearance.pack_start(title("Screen-edge placement"), False, False, 0)
+    edge = Gtk.ComboBoxText()
+    for edge_name in EDGES:
+        edge.append(edge_name, edge_name.capitalize())
+    edge.set_active_id(placement["edge"])
+    fine_x = Gtk.SpinButton.new_with_range(-20000, 20000, 1)
+    fine_y = Gtk.SpinButton.new_with_range(-20000, 20000, 1)
+    fine_x.set_value(placement["x"])
+    fine_y.set_value(placement["y"])
+    appearance.pack_start(row(label("Side:"), edge), False, False, 0)
+    appearance.pack_start(row(label("Fine offset X (px):"), fine_x,
+                              label("Y (px):"), fine_y), False, False, 0)
+    appearance.pack_start(label(
+        "Defaults center the middle square on the selected edge. "
+        "Super + left-click and drag any square to fine-tune its position; "
+        "the panel remembers its location.", True
+    ), False, False, 0)
+
+    def reset_position(_button):
+        edge.set_active_id("top")
+        fine_x.set_value(0)
+        fine_y.set_value(0)
+
+    reset = Gtk.Button(label="Reset position to top center")
+    reset.connect("clicked", reset_position)
+    appearance.pack_start(reset, False, False, 0)
+
     original = read_appearance()
     appearance.pack_start(title("Square appearance"), False, False, 0)
     square = color_picker(original["square_color"])
@@ -158,6 +187,9 @@ def main() -> None:
             }
             save_appearance(new_values)
             save_mode(choice)
+            save_position({"edge": edge.get_active_id() or "top",
+                           "x": fine_x.get_value_as_int(),
+                           "y": fine_y.get_value_as_int()})
             return "Appearance saved. Wallpaper changes take effect at next login."
         attempt(action)
 
