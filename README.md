@@ -82,10 +82,18 @@ square. The settings dialog now has four sections:
   use the standard XDG MIME system and therefore also affect other Linux
   desktop sessions for the same user; Tres's terminal choice is Tres-only.
 
-The right-square **Files** command uses the selected folder handler and
-falls back to a supported installed standalone file manager. If there is
-no supported file manager installed, install one (for example,
-`sudo apt install thunar`) and choose it under Default applications.
+The right-square **Files** command launches the file manager you select
+under Default applications, using the standard XDG folder association.
+The chooser discovers installed graphical file managers from desktop-file
+categories **as well as** the normal folder-handler list. It doesn't restrict
+choices to a built-in list of executables. If two apps have the same displayed
+name, their desktop IDs are shown to distinguish them. A basic fallback is
+used only when the default file manager cannot be launched.
+
+Only applications with installed desktop entries can appear in the chooser;
+terminal-only tools without a desktop entry are not automatically listed.
+Changing the file-manager default also changes the user's standard XDG folder
+association in other sessions.
 
 The original Labwc **Reconfigure** and **Exit** commands remain in the
 desktop right-click menu. The three-square layout remains completely
