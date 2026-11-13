@@ -134,6 +134,18 @@ otherwise. Unavailable controls are reported rather than silently ignored.
 The package recommends the desktop portal backends; audio clients can be
 installed independently if they are missing.
 
+## Synaptic on Tres (XWayland)
+
+Synaptic's root process may be unable to access XWayland after successful
+Polkit authentication. If Synaptic is installed, the Tres applications menu
+routes its desktop launcher through `tres-synaptic`, which temporarily allows
+root to access the current X display while Synaptic runs and revokes that
+permission afterward. The wrapper uses `xhost` and `flock`; install
+`x11-xserver-utils` if `xhost` is missing. It does not grant persistent
+access or modify the display permissions of other sessions. During the
+Synaptic session, root processes can access the X display; this is an X11
+compatibility concession, not ordinary Wayland isolation.
+
 ## Graphical administrator authentication
 
 Tres starts the lightweight `lxpolkit` authentication agent in its own session,
