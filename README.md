@@ -61,14 +61,20 @@ The default COSMIC option remains available.
 
 ## Updating from GitHub
 
+For routine code fixes after the initial installation, **no sudo or apt needed**:
+
 ```bash
 git pull --ff-only
-bash install.sh
+bash scripts/update-panel.sh
+bash scripts/diagnose.sh
+bash scripts/test-nested.sh
 ```
 
-Updating the panel requires ending the old panel process / logging out and
-back in. The installer preserves an existing Tres autostart file, so user
-customizations won't be overwritten.
+Close an earlier nested Labwc test window before restarting it. The new code
+is loaded when Labwc starts the panel again. Run `bash install.sh` only for the
+first setup or when dependencies/session installation change. The installer
+preserves an existing Tres autostart file, so user customizations won't be
+overwritten.
 
 ## Shortcuts & recovery
 
@@ -87,6 +93,11 @@ To diagnose missing menus or applets:
 bash scripts/diagnose.sh
 cat ~/.cache/tres-labwc/panel.log
 ```
+
+If the panel log mentions `Gdk` version `4.0` already loaded, pull the latest
+version and run `bash scripts/update-panel.sh` to install the corrected GTK3
+bootstrap. The diagnostic now checks the exact same GDK 3/GTK 3 import path as
+the panel itself.
 
 If a graphical login is unusable, switch to a text TTY (often Ctrl+Alt+F3),
 log in, and run `bash uninstall.sh` from your repository checkout, then reboot
