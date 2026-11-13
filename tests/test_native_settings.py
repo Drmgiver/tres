@@ -205,6 +205,14 @@ class FileManagerTests(TestCase):
         self.assertIn("tres-open-files", panel)
         self.assertIn("open_terminal", panel)
 
+    def test_defaults_do_not_change_unselected_file_handlers(self):
+        settings = (ROOT / "src/tres_config.py").read_text()
+        self.assertIn('chooser.append("__keep__"', settings)
+        self.assertIn('app_id == "__keep__"', settings)
+        self.assertIn('"x-scheme-handler/http"', settings)
+        self.assertIn('"text/html"', settings)
+        self.assertIn('_is_cosmic(existing)', settings)
+
     def test_default_files_helper_is_packaged_and_installed(self):
         install = (ROOT / "debian/tres.install").read_text()
         self.assertIn("src/tres_open.py usr/share/tres", install)
