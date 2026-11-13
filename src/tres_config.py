@@ -5,9 +5,10 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+from collections import Counter
 
 from tres_display import DisplayError, apply_scale, output_info
-from tres_open import is_supported_file_manager
+from tres_open import file_manager_choices
 from tres_layout import MODES, read_mode, save_mode
 from tres_preferences import (DEFAULT_APPEARANCE, TERMINALS, read_appearance,
                               read_terminal, save_appearance, save_terminal)
@@ -243,26 +244,35 @@ def main() -> None:
     handlers = {}
     for caption, mime in MIME_CHOICES:
         chooser = Gtk.ComboBoxText()
-        available = {}
         existing = Gio.AppInfo.get_default_for_type(mime, False)
-        if mime == "inode/directory" and existing and not is_supported_file_manager(existing):
-            chooser.append("__keep__", "Current file manager is not supported (choose another)")
+        chooser.append("__keep__", "Leave unchanged")
+        if mime == "inode/directory":
+            # Some installed file managers omit the folder MIME association.
+            # Discover FileManager desktop entries as well as MIME handlers;
+            # never exclude an app simply because it belongs to another DE.
+            available = file_manager_choices(
+                Gio.AppInfo.get_all_for_type(mime),
+                Gio.AppInfo.get_all(),
+                existing,
+            )
         else:
-            chooser.append("__keep__", "Leave unchanged")
-        for app in Gio.AppInfo.get_all_for_type(mime):
-            app_id = app.get_id()
-            if mime == "inode/directory" and not is_supported_file_manager(app):
-                # Only offer file managers known to work independently.
-                continue
-            if app_id and app_id not in available:
-                available[app_id] = app
-        if existing and existing.get_id() and not (
-            mime == "inode/directory" and not is_supported_file_manager(existing)
-        ):
-            available[existing.get_id()] = existing
+            available = {}
+            for app in Gio.AppInfo.get_all_for_type(mime):
+                app_id = app.get_id()
+                if app_id and app_id not in available:
+                    available[app_id] = app
+            if existing and existing.get_id():
+                available[existing.get_id()] = existing
+
+        # Two unrelated file managers may both be called "Files". Distinguish
+        # them by their actual desktop IDs without hardcoding product names.
+        counts = Counter(app.get_name().casefold() for app in available.values())
         for app_id, app in sorted(available.items(),
-                                  key=lambda pair: pair[1].get_name().casefold()):
-            chooser.append(app_id, app.get_name())
+                                  key=lambda pair: (pair[1].get_name().casefold(), pair[0])):
+            display_name = app.get_name()
+            if counts[display_name.casefold()] > 1:
+                display_name += f" ({app_id})"
+            chooser.append(app_id, display_name)
         if existing and existing.get_id() in available:
             chooser.set_active_id(existing.get_id())
         else:
@@ -273,8 +283,9 @@ def main() -> None:
         defaults.pack_start(row(label(caption + ":"), chooser), False, False, 0)
 
     defaults.pack_start(label(
-        "If no suitable file manager appears, install one such as Thunar "
-        "(sudo apt install thunar) and reopen settings.", True
+        "File managers are discovered from installed desktop launchers and "
+        "folder associations. Choosing one changes the user's XDG default.",
+        True,
     ), False, False, 0)
 
     terminal = Gtk.ComboBoxText()
