@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from tres_position import (DEFAULT_POSITION, EDGES, panel_size, origin,
                            coordinates, with_coordinates, read_position,
-                           save_position, validate_position)
+                           save_position, validate_position, reservation_depth)
 
 
 class PositionTests(unittest.TestCase):
@@ -22,25 +22,48 @@ class PositionTests(unittest.TestCase):
         self.assertEqual(x + 19 + 5 + 19 / 2, 959.5)
         self.assertLess(abs(x + 19 + 5 + 19 / 2 - 960), 1)
 
-    def test_edge_presets(self):
-        width, height = panel_size(19)
+    def test_edge_presets_and_orientation(self):
         for edge in EDGES:
             with self.subTest(edge=edge):
+                width, height = panel_size(19, edge)
                 x, y = coordinates({"edge": edge, "x": 0, "y": 0},
                                    width, height, 1920, 1080)
                 if edge == "top":
-                    self.assertEqual(y, 3)
+                    self.assertEqual((width, height), (67, 19))
+                    self.assertEqual((x, y), (926, 3))
                 elif edge == "bottom":
-                    self.assertEqual(y, 1058)
+                    self.assertEqual((width, height), (67, 19))
+                    self.assertEqual((x, y), (926, 1058))
                 elif edge == "left":
-                    self.assertEqual(x, 3)
+                    self.assertEqual((width, height), (19, 67))
+                    self.assertEqual((x, y), (3, 506))
                 else:
-                    self.assertEqual(x, 1850)
+                    self.assertEqual((width, height), (19, 67))
+                    self.assertEqual((x, y), (1898, 506))
+
+    def test_side_centering_uses_second_square(self):
+        for edge in ("left", "right"):
+            width, height = panel_size(19, edge)
+            x, y = coordinates({"edge": edge, "x": 0, "y": 0},
+                               width, height, 1920, 1080)
+            middle_center = y + 19 + 5 + 19 / 2
+            self.assertLess(abs(middle_center - 540), 1)
+
+    def test_reserved_strip_matches_selected_edge(self):
+        monitor = (1920, 1080)
+        for edge, expected in (("top", 22), ("bottom", 22),
+                               ("left", 22), ("right", 22)):
+            width, height = panel_size(19, edge)
+            x, y = coordinates({"edge": edge, "x": 0, "y": 0},
+                               width, height, *monitor)
+            self.assertEqual(
+                reservation_depth(edge, x, y, width, height, *monitor), expected)
+        self.assertEqual(reservation_depth("bottom", 450, 1000, 67, 19, *monitor), 80)
 
     def test_offsets_can_move_in_both_axes(self):
-        width, height = panel_size(19)
         desired = (450, 230)
         for edge in EDGES:
+            width, height = panel_size(19, edge)
             position = with_coordinates(edge, *desired, width, height, 1920, 1080)
             self.assertEqual(coordinates(position, width, height, 1920, 1080),
                              desired)
@@ -69,6 +92,11 @@ class PositionTests(unittest.TestCase):
         settings = (ROOT / "src/tres_config.py").read_text()
         self.assertIn("Gdk.ModifierType.SUPER_MASK", panel)
         self.assertIn("save_position(self._position)", panel)
+        self.assertIn("Gtk.Orientation.VERTICAL", panel)
+        self.assertIn("GtkLayerShell.Edge.BOTTOM", panel)
+        self.assertIn("GtkLayerShell.Edge.RIGHT", panel)
+        self.assertIn("self._reserve_work_area(", panel)
+        self.assertNotIn("auto_exclusive_zone_enable(self.window)", panel)
         self.assertIn('label("Side:")', settings)
         self.assertIn("save_position({", settings)
         self.assertIn("tres_position.py", (ROOT / "scripts/update-panel.sh").read_text())
