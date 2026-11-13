@@ -1,18 +1,20 @@
-Source: tres-labwc
+Source: tres
 Section: x11
 Priority: optional
 Maintainer: Drmgiver <40727210+Drmgiver@users.noreply.github.com>
 Build-Depends: debhelper-compat (= 13), dh-python, python3
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Homepage: https://github.com/Drmgiver/tres-labwc
-Vcs-Git: https://github.com/Drmgiver/tres-labwc.git
-Vcs-Browser: https://github.com/Drmgiver/tres-labwc
+Homepage: https://github.com/Drmgiver/Tres
+Vcs-Git: https://github.com/Drmgiver/Tres.git
+Vcs-Browser: https://github.com/Drmgiver/Tres
 
-Package: tres-labwc
+Package: tres
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, python3, python3-gi,
  gir1.2-gtk-3.0, gir1.2-gtklayershell-0.1, labwc, wlrctl, foot, swaybg
+Breaks: tres-labwc (<< 0.2~)
+Replaces: tres-labwc (<< 0.2~)
 Suggests: wlr-randr, pavucontrol, network-manager-gnome, blueman
 Description: three-square minimalist desktop session for Wayland
  Tres is an ultra-minimal desktop interface based on the Labwc Wayland
@@ -20,5 +22,5 @@ Description: three-square minimalist desktop session for Wayland
  window selector, and system applets. Windows can cover the squares and
  no taskbar or full-width panel is shown.
  .
- Installing this package adds Tres (Labwc) as an optional login session.
+ Installing this package adds Tres as an optional login session.
  Existing desktop environments remain installed.

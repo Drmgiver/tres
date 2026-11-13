@@ -2,7 +2,7 @@
 # Read-only diagnostic for Tres/Labwc standalone session failures.
 set -uo pipefail
 
-echo '=== Tres / Labwc diagnostics ==='
+echo '=== Tres diagnostics ==='
 echo "Current desktop: ${XDG_CURRENT_DESKTOP:-unknown}"
 echo "Current session: ${XDG_SESSION_TYPE:-unknown}"
 echo
@@ -21,8 +21,8 @@ for status in /sys/class/drm/card*-*/status; do
 done
 echo
 echo '=== Standalone Labwc debug log ==='
-if [[ -f "$HOME/.cache/tres-labwc/labwc-standalone.log" ]]; then
-  tail -n 120 "$HOME/.cache/tres-labwc/labwc-standalone.log"
+if [[ -f "$HOME/.cache/tres/labwc-standalone.log" ]]; then
+  tail -n 120 "$HOME/.cache/tres/labwc-standalone.log"
 else
   echo 'No standalone debug log yet (new launcher must be installed and used once).'
 fi
@@ -44,8 +44,8 @@ for boot in 0 -1; do
 done
 echo
 echo '=== Recent Tres panel warnings ==='
-if [[ -f "$HOME/.cache/tres-labwc/panel.log" ]]; then
-  tail -n 20 "$HOME/.cache/tres-labwc/panel.log"
+if [[ -f "$HOME/.cache/tres/panel.log" ]]; then
+  tail -n 20 "$HOME/.cache/tres/panel.log"
 else
   echo 'No panel log.'
 fi

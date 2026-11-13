@@ -1,0 +1,14 @@
+#!/bin/sh
+# Start the Tres session using isolated user configuration.
+set -eu
+config="${XDG_CONFIG_HOME:-$HOME/.config}/tres/labwc"
+legacy="$HOME/.config/tres-labwc"
+if [ ! -e "${XDG_CONFIG_HOME:-$HOME/.config}/tres" ] && [ -d "$legacy" ]; then
+    /usr/bin/env bash /usr/share/tres/migrate-legacy.sh
+fi
+mkdir -p "$config"
+if [ ! -e "$config/autostart" ]; then
+    cp /usr/share/tres/autostart "$config/autostart"
+    chmod 0755 "$config/autostart"
+fi
+exec /usr/lib/tres/tres-session.sh "$@"

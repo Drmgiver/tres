@@ -2,7 +2,7 @@
 # Update only Tres's installed login wrapper. Avoid rerunning apt-get.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-WRAPPER="/usr/local/bin/tres-labwc-session"
+WRAPPER="/usr/local/bin/tres-session"
 if [[ ! -f "$WRAPPER" ]] || ! grep -q '^# A dedicated session' "$WRAPPER"; then
   echo "Refusing to overwrite missing/unrecognized wrapper: $WRAPPER" >&2
   echo 'Run bash install.sh only if Tres is not installed yet.' >&2

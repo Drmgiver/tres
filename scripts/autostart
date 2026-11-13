@@ -1,7 +1,7 @@
 #!/bin/sh
 # This file is used ONLY by the Tres session's private Labwc config directory.
-mkdir -p "$HOME/.cache/tres-labwc"
+mkdir -p "$HOME/.cache/tres"
 if command -v swaybg >/dev/null 2>&1; then
     swaybg -c '#141414' >/dev/null 2>&1 &
 fi
-"$HOME/.local/bin/tres-panel" >> "$HOME/.cache/tres-labwc/panel.log" 2>&1 &
+"$HOME/.local/bin/tres-panel" >> "$HOME/.cache/tres/panel.log" 2>&1 &

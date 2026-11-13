@@ -2,7 +2,7 @@
 # Copy updated Tres panel code from a git checkout; no sudo or apt needed.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-DEST="$HOME/.local/share/tres-labwc"
+DEST="$HOME/.local/share/tres"
 
 if [[ ! -d "$DEST" ]]; then
     echo 'Tres is not installed yet. Run bash install.sh once.' >&2

@@ -8,4 +8,4 @@ override_dh_auto_test:
 	python3 -m unittest discover -s tests -v
 
 override_dh_python3:
-	dh_python3 /usr/share/tres-labwc
+	dh_python3 /usr/share/tres

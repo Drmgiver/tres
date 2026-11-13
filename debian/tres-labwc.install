@@ -1,7 +1,0 @@
-src/tres_panel.py usr/share/tres-labwc
-src/tres_core.py usr/share/tres-labwc
-scripts/tres-session.sh usr/lib/tres-labwc
-packaging/deb/tres-panel usr/bin
-packaging/deb/tres-labwc-session usr/bin
-packaging/deb/autostart usr/share/tres-labwc
-packaging/deb/tres-labwc.desktop usr/share/wayland-sessions

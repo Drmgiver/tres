@@ -6,47 +6,65 @@ automatically get the software into Debian or Ubuntu archives.
 
 ## Build on GitHub
 
-Open [Debian package workflow](https://github.com/Drmgiver/tres-labwc/actions/workflows/debian-package.yml).
-Select a successful run and download the `tres-labwc-debian-packages` artifact.
-The ZIP contains `tres-labwc_0.1.0-1_all.deb`, an **unsigned** source package
+Open the [Debian package workflow](../.github/workflows/debian-package.yml) in this repository.
+Select a successful run and download the `tres-debian-packages` artifact.
+The ZIP contains `tres_0.2.0-1_all.deb`, an **unsigned** source package
 for review, and a lintian report. It is **not yet an official Ubuntu package**.
 
 The `Architecture: all` Debian package installs an optional
-`Tres (Labwc)` login session, and depends on the existing distribution
+`Tres` login session, and depends on the existing distribution
 packages Labwc, GTK3 layer-shell bindings, `wlrctl`, Python GI, `foot`,
 and `swaybg`.
 
 To test a build on Ubuntu/Pop!_OS **on a spare/test machine first**:
 
 ```bash
-sudo apt install ./tres-labwc_0.1.0-1_all.deb
+sudo apt install ./tres_0.2.0-1_all.deb
 ```
 
-Choose **Tres (Labwc)** at the login screen. Keep your current desktop
+Choose **Tres** at the login screen. Keep your current desktop
 environment installed. To remove the package:
 
 ```bash
-sudo apt remove tres-labwc
+sudo apt remove tres
 ```
 
-Do **not** run the old `uninstall.sh` after installing the Debian package:
-the old uninstaller removes a session entry now owned by dpkg.
+Do **not** run the former shell-installation `uninstall.sh` against a
+package-managed Tres session. Use `sudo apt remove tres` to uninstall
+the new package.
 
-### Migrating an existing Tres installation
+### Migrating an existing Tres-Labwc installation
 
-The original `install.sh` wrote a user autostart file that launches the
-panel from `~/.local/bin/tres-panel`, while the Debian package uses
-`/usr/bin/tres-panel`. The Debian package won't replace your user
-configuration automatically. After installing the package, run:
+The previous project installed configuration under
+`~/.config/tres-labwc/` and provided an optional Debian package named
+`tres-labwc`. This release uses `~/.config/tres/`, a package named
+`tres`, and a login choice labelled **Tres**.
+
+**Before** installing the new package (or at least before first signing in),
+run the migration script from your source checkout:
 
 ```bash
-bash packaging/deb/migrate-legacy.sh
+bash scripts/migrate-legacy.sh
 ```
 
-The migration script backs up your original autostart file, changes **only**
-the old panel-launcher path, and preserves your saved scaling commands.
-Log out and sign back into Tres to use the package-managed implementation.
-Keep the original files until you've confirmed the packaged session works.
+It copies the old configuration if the new directory does not already
+exist, retains your display scaling/GPU settings, and never removes the
+original. If the new directory already exists, the helper refuses to merge
+the two so nothing is silently overwritten.
+
+Alternatively, after installing the .deb, the package's first-run
+session wrapper can perform that safe copy automatically when no new
+configuration exists.
+
+The Debian control file declares **Breaks/Replaces** for the old
+`tres-labwc` package. APT may remove the old experimental package when
+installing `tres`. Keep your old source checkout and COSMIC or other
+desktop session available until you have tested the renamed Tres session.
+
+**Legacy shell installers:** the renamed project installs a new login
+entry at `/usr/share/wayland-sessions/tres.desktop`; it deliberately
+does not delete the old `tres-labwc.desktop` entry during migration.
+You can clean up the old entry only after confirming the new session works.
 
 ### Local builds
 
@@ -57,15 +75,17 @@ sudo apt install debhelper dh-python dpkg-dev lintian
 dpkg-buildpackage --build=binary --no-sign
 ```
 
-The build emits `../tres-labwc_0.1.0-1_all.deb`.
+The build emits `../tres_0.2.0-1_all.deb`.
 For a **source** package, create an upstream source tarball first (without
 the `debian` directory), then build source:
 
 ```bash
+srcdir="$(basename "$PWD")"
 cd ..
-tar --exclude='tres-labwc/.git' --exclude='tres-labwc/debian' \
-    -czf tres-labwc_0.1.0.orig.tar.gz tres-labwc
-cd tres-labwc
+tar --exclude-vcs --exclude="$srcdir/debian" \
+    --transform="s|^$srcdir|tres-0.2.0|" \
+    -czf tres_0.2.0.orig.tar.gz "$srcdir"
+cd "$srcdir"
 dpkg-buildpackage --build=source --no-sign
 ```
 
