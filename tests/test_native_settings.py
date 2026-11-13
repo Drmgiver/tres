@@ -15,7 +15,7 @@ from tres_preferences import (DEFAULT_APPEARANCE, read_appearance, save_appearan
                               read_terminal, save_terminal)
 from tres_display import DisplayError, apply_scale, output_info
 from tres_shortcuts import DEFAULT_KEYS, read_shortcuts, save_shortcuts
-from tres_open import FILE_MANAGERS, FileManagerError, open_home
+from tres_open import FILE_MANAGERS, FileManagerError, is_supported_file_manager, open_home
 
 
 class PreferencesTests(TestCase):
@@ -186,6 +186,17 @@ class UpgradeTests(TestCase):
 
 
 class FileManagerTests(TestCase):
+    def test_supported_file_manager_uses_executable_not_brand(self):
+        class App:
+            def __init__(self, executable):
+                self.executable = executable
+            def get_executable(self):
+                return self.executable
+        self.assertTrue(is_supported_file_manager(App("/usr/bin/thunar")))
+        self.assertTrue(is_supported_file_manager(App("nemo")))
+        self.assertFalse(is_supported_file_manager(App("/usr/bin/desktop-bound-files")))
+        self.assertFalse(is_supported_file_manager(App("")))
+
     @patch("tres_open.subprocess.Popen")
     @patch("tres_open.shutil.which", side_effect=lambda cmd: "/usr/bin/" + cmd if cmd == "thunar" else None)
     def test_unsupported_default_falls_back_to_standalone_manager(self, which, popen):
