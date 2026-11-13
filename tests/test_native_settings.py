@@ -1,5 +1,6 @@
 """Regression tests for native Tres appearance, scaling, shortcuts, and Files."""
 from pathlib import Path
+import subprocess
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
@@ -146,6 +147,41 @@ class ShortcutsTests(TestCase):
             with self.assertRaises(ValueError):
                 save_shortcuts(DEFAULT_KEYS, p)
             self.assertEqual(p.read_text(), "<labwc_config><keyboard>")
+
+
+class UpgradeTests(TestCase):
+    def test_shell_updater_keeps_existing_scale_and_custom_configuration(self):
+        with TemporaryDirectory() as td:
+            home = Path(td)
+            config = home / ".config/tres/labwc"
+            config.mkdir(parents=True)
+            previous = ('#!/bin/sh\n'
+                        'if command -v swaybg >/dev/null 2>&1; then\n'
+                        "    swaybg -c '#141414' >/dev/null 2>&1 &\n"
+                        'fi\n'
+                        '# BEGIN TRES DISPLAY SCALE\n'
+                        '(sleep 1; wlr-randr --output eDP-1 --scale 1.5) &\n'
+                        '# END TRES DISPLAY SCALE\n'
+                        'custom-session-hook &\n')
+            autostart = config / "autostart"
+            autostart.write_text(previous, encoding="utf-8")
+            env = {**os.environ, "HOME": td}
+            script = ROOT / "scripts/install-settings.sh"
+            for _ in range(2):  # idempotent, not just one successful run
+                result = subprocess.run(
+                    ["bash", str(script)], env=env, capture_output=True,
+                    text=True, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+            updated = autostart.read_text(encoding="utf-8")
+            self.assertIn('"$HOME/.local/bin/tres-wallpaper"', updated)
+            self.assertIn("--output eDP-1 --scale 1.5", updated)
+            self.assertIn("custom-session-hook &", updated)
+            self.assertEqual(updated.count("tres-wallpaper"), 1)
+            self.assertEqual((config / "autostart.before-tres-wallpaper").read_text(),
+                             previous)
+            self.assertTrue((home / ".local/bin/tres-open-files").exists())
+            self.assertTrue((home / ".local/bin/tres-wallpaper").exists())
 
 
 class FileManagerTests(TestCase):
