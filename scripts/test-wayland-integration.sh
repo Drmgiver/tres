@@ -80,8 +80,8 @@ fi
 # Move the live panel across all four edges, including a real exclusive
 # work-area reservation. Exercise panel orientation and anchor changes in GTK.
 for edge in top bottom left right; do
-    printf '{"edge":"%s","x":0,"y":0}\\n' "$edge" > "$XDG_CONFIG_HOME/tres/panel-position.json"
-    printf 'reserved\\n' > "$XDG_CONFIG_HOME/tres/panel-mode"
+    printf '{"edge":"%s","x":0,"y":0}\n' "$edge" > "$XDG_CONFIG_HOME/tres/panel-position.json"
+    printf 'reserved\n' > "$XDG_CONFIG_HOME/tres/panel-mode"
     sleep 2
     if ! kill -0 "$PANEL_PID" 2>/dev/null; then
         echo "Tres panel failed with reserved space on $edge." >&2
@@ -89,7 +89,7 @@ for edge in top bottom left right; do
         exit 1
     fi
 done
-printf 'under\\n' > "$XDG_CONFIG_HOME/tres/panel-mode"
+printf 'under\n' > "$XDG_CONFIG_HOME/tres/panel-mode"
 sleep 2
 if ! kill -0 "$PANEL_PID" 2>/dev/null; then
     echo "Tres panel failed while leaving reserved mode." >&2
