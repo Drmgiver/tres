@@ -23,3 +23,4 @@ packaging/deb/tres-session usr/bin
 packaging/deb/autostart usr/share/tres
 packaging/deb/tres.desktop usr/share/wayland-sessions
 scripts/migrate-legacy.sh usr/share/tres
+scripts/tres-portals.conf usr/share/tres
