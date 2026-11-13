@@ -19,7 +19,8 @@ import sys
 src = Path(sys.argv[1]) / "src"
 for name in ("tres_core.py", "tres_panel.py", "tres_layout.py", "tres_config.py", "tres_capture.py", "tres_screenshot.py",
              "tres_preferences.py", "tres_display.py", "tres_shortcuts.py",
-             "tres_open.py", "tres_wallpaper.py", "tres_terminal.py"):
+             "tres_open.py", "tres_wallpaper.py", "tres_terminal.py",
+             "tres_audio.py", "tres_panel_control.py", "tres_menu.py"):
     ast.parse((src / name).read_text(encoding="utf-8"), filename=name)
 print("Python source syntax: OK")
 PY
@@ -30,7 +31,7 @@ install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
 install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
-for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal; do
+for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu; do
     install -m 0644 "$ROOT/src/$module.py" "$DEST/$module.py"
 done
 bash "$ROOT/scripts/install-screenshot.sh"
@@ -53,5 +54,6 @@ if [[ ! -e "$CFG/menu.xml" ]]; then
 else
     echo "Keeping existing $CFG/menu.xml (add Reconfigure Tres manually if customized)"
 fi
+bash "$ROOT/scripts/install-panel-recovery.sh"
 echo "Tres panel updated. Close any running nested Labwc window,"
 echo "then log out and back into Tres to load the new panel (other desktops unchanged)."
