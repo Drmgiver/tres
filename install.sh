@@ -41,7 +41,7 @@ install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
 install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
-for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal; do
+for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu; do
     install -m 0644 "$ROOT/src/$module.py" "$DEST/$module.py"
 done
 bash "$ROOT/scripts/install-screenshot.sh"
@@ -70,6 +70,8 @@ if [[ ! -e "$CFG/autostart" ]]; then
 else
     echo "Keeping existing $CFG/autostart"
 fi
+
+bash "$ROOT/scripts/install-panel-recovery.sh"
 
 sudo install -m 0755 "$ROOT/scripts/tres-session.sh" "$SYSTEM_WRAPPER"
 tmpfile="$(mktemp)"
