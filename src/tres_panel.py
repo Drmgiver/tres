@@ -26,7 +26,7 @@ try:
 except (ImportError, ValueError) as error:
     sys.exit(f"GTK3 layer-shell not installed: {error}\nRun bash install.sh")
 
-from tres_core import activate, request_power_action, windows  # noqa: E402
+from tres_core import activate, request_power_action, submenu_pages, windows  # noqa: E402
 from tres_layout import read_mode  # noqa: E402
 
 STYLE = b"""
@@ -186,13 +186,32 @@ class Tres:
             except Exception:
                 continue
         for group in sorted(found):
-            rows = []
-            for app in sorted(found[group], key=lambda x: x.get_name().casefold()):
-                rows.append(self.item(app.get_name(), lambda app=app: self.launch_app(app)))
-            menu.append(self.submenu(group, rows))
+            apps = sorted(found[group], key=lambda x: x.get_name().casefold())
+            menu.append(self.submenu(group, self._application_rows(apps)))
         if not found:
             menu.append(self.item("No desktop applications found"))
         return menu
+
+    def _application_rows(self, apps, offset=0):
+        """Keep GTK3 menus short so Wayland never hides the final apps.
+
+        GTK3's tall-menu scrolling is unreliable under Wayland. Instead of
+        depending on scroll arrows, large categories have numbered submenus.
+        A single menu never contains more than 12 app/page entries.
+        """
+        sections = submenu_pages(len(apps))
+        if len(sections) <= 1:
+            return [
+                self.item(app.get_name(), lambda app=app: self.launch_app(app))
+                for app in apps
+            ]
+        return [
+            self.submenu(
+                f"Apps {offset + start + 1}–{offset + end}",
+                self._application_rows(apps[start:end], offset + start),
+            )
+            for start, end in sections
+        ]
 
     @staticmethod
     def launch_app(app):
