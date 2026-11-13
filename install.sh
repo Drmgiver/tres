@@ -36,7 +36,7 @@ fi
 
 printf '%s\n' 'Installing Labwc, GTK3 layer-shell, wlrctl, a terminal, and wallpaper helper.'
 sudo apt-get update
-sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr
+sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr lxpolkit
 
 # Copy the previous Tres configuration, if any, without deleting the old one.
 if [[ -d "$HOME/.config/tres-labwc" && ! -e "$HOME/.config/tres" ]]; then
@@ -81,6 +81,7 @@ else
 fi
 
 bash "$ROOT/scripts/install-panel-recovery.sh"
+bash "$ROOT/scripts/install-polkit.sh"
 
 sudo install -m 0755 "$ROOT/scripts/tres-session.sh" "$SYSTEM_WRAPPER"
 tmpfile="$(mktemp)"
