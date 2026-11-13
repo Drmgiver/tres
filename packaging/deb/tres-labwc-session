@@ -1,0 +1,11 @@
+#!/bin/sh
+# Install the default autostart only on first login. Never overwrite a
+# user's existing Tres configuration, including their saved display scale.
+set -eu
+config="${XDG_CONFIG_HOME:-$HOME/.config}/tres-labwc/labwc"
+mkdir -p "$config"
+if [ ! -e "$config/autostart" ]; then
+    cp /usr/share/tres-labwc/autostart "$config/autostart"
+    chmod 0755 "$config/autostart"
+fi
+exec /usr/lib/tres-labwc/tres-session.sh "$@"
