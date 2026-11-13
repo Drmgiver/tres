@@ -2,11 +2,11 @@
 # A dedicated session; never modifies or replaces Pop!_OS's COSMIC session.
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=labwc
-export XDG_SESSION_DESKTOP=tres-labwc
+export XDG_SESSION_DESKTOP=tres
 
 # Keep the compositor's own errors across a failed graphical login. The panel
 # log alone cannot diagnose failures before the first output is ready.
-logdir="$HOME/.cache/tres-labwc"
+logdir="$HOME/.cache/tres"
 mkdir -p "$logdir" || exit 1
 chmod 700 "$logdir" || exit 1
 umask 077
@@ -19,7 +19,7 @@ log="$logdir/labwc-standalone.log"
 # Optional, reversible graphics preference. A normal installation has no
 # override. Only a plain /dev/dri/cardN device is accepted; no shell code is
 # ever evaluated from user-supplied configuration.
-choice_file="$HOME/.config/tres-labwc/drm-device"
+choice_file="$HOME/.config/tres/drm-device"
 if [ -r "$choice_file" ]; then
     IFS= read -r candidate < "$choice_file" || true
     resolved="$(readlink -f "$candidate" 2>/dev/null || true)"
@@ -43,4 +43,4 @@ unset WAYLAND_DISPLAY WAYLAND_SOCKET DISPLAY
 
 # -d is Labwc's supported verbose debug option. Redirect both streams so
 # another black screen leaves a useful record after reboot.
-exec /usr/bin/labwc -d -C "$HOME/.config/tres-labwc/labwc" >> "$log" 2>&1
+exec /usr/bin/labwc -d -C "$HOME/.config/tres/labwc" >> "$log" 2>&1

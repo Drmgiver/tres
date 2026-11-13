@@ -18,8 +18,8 @@ if [[ "$driver" != "amdgpu" ]]; then
   echo "Refusing selection: $path is using driver '$driver', not amdgpu" >&2
   exit 1
 fi
-mkdir -p "$HOME/.config/tres-labwc"
-printf '%s\n' "$path" > "$HOME/.config/tres-labwc/drm-device"
+mkdir -p "$HOME/.config/tres"
+printf '%s\n' "$path" > "$HOME/.config/tres/drm-device"
 echo "Tres standalone GPU override set to $path ($driver)"
 echo 'The setting applies only at the next Tres login.'
 echo 'Undo: bash scripts/clear-gpu-override.sh'

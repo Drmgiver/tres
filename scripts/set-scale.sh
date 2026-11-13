@@ -28,7 +28,7 @@ fi
 # Fail before persisting anything if the compositor rejects the setting.
 wlr-randr --output "$output" --scale "$scale"
 
-config="$HOME/.config/tres-labwc/labwc"
+config="$HOME/.config/tres/labwc"
 mkdir -p -- "$config"
 python3 - "$config/autostart" "$output" "$scale" <<'PY'
 from pathlib import Path
