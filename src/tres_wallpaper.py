@@ -10,7 +10,7 @@ def main():
     if not shutil.which("swaybg"):
         sys.exit("Tres wallpaper: swaybg is not installed.")
     color = read_appearance()["wallpaper_color"]
-    # This process becomes the wallpaper helper; it does not alter COSMIC.
+    # This process becomes Tres's private wallpaper helper.
     raise SystemExit(subprocess.call(["swaybg", "-c", color]))
 
 
