@@ -1,10 +1,7 @@
 #!/bin/sh
 # Tres-managed Polkit authentication agent starter.
-# Run only inside Tres, never alter other desktop sessions.
-case ":${XDG_CURRENT_DESKTOP:-}:" in
-    *:tres:*|*:Tres:*) ;;
-    *) exit 0 ;;
-esac
+# This launcher is invoked only from Tres's private Labwc autostart.
+# Labwc may advertise XDG_CURRENT_DESKTOP=labwc; don't reject valid Tres sessions.
 if ! command -v lxpolkit >/dev/null 2>&1; then
     printf '%s\n' 'Tres: lxpolkit is missing; install the lxpolkit package.' >&2
     exit 1
