@@ -55,4 +55,4 @@ path.chmod(path.stat().st_mode | 0o100)
 PY
 
 echo "Applied scale $scale to $output and saved it for future Tres sessions."
-echo "COSMIC display settings were not changed."
+echo "Other desktop environments' display settings were not changed."
