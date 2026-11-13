@@ -38,6 +38,7 @@ bash "$ROOT/scripts/install-settings.sh"
 mkdir -p "$BIN" "$CFG"
 cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
+# Tres-managed launcher
 # Tres stacking configuration launcher.
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_config.py" "$@"
 EOF
