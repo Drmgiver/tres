@@ -28,19 +28,23 @@ except (ImportError, ValueError) as error:
 
 from tres_core import activate, request_power_action, submenu_pages, windows  # noqa: E402
 from tres_layout import read_mode  # noqa: E402
+from tres_preferences import read_appearance, read_terminal  # noqa: E402
 
-STYLE = b"""
-window#tres-root { background-color: transparent; }
-button.tres-square {
-    min-width: 19px; min-height: 19px;
+def panel_style(appearance: dict) -> bytes:
+    """Safe CSS: colors and size are strictly validated by tres_preferences."""
+    size = appearance["square_size"]
+    return f"""
+window#tres-root {{ background-color: transparent; }}
+button.tres-square {{
+    min-width: {size}px; min-height: {size}px;
     padding: 0; margin: 0;
     border: 0; border-radius: 0;
-    background-image: none; background-color: #ffffff;
+    background-image: none; background-color: {appearance["square_color"]};
     box-shadow: none;
-}
-button.tres-square:hover { background-color: #d8d8d8; }
-button.tres-square:active { background-color: #aaaaaa; }
-"""
+}}
+button.tres-square:hover {{ background-color: {appearance["hover_color"]}; }}
+button.tres-square:active {{ background-color: #aaaaaa; }}
+""".encode("ascii")
 
 CATEGORY_PRIORITY = (
     ("Accessories", ("Utility", "Accessories")),
@@ -97,9 +101,10 @@ class Tres:
         if screen and screen.get_rgba_visual():
             self.window.set_visual(screen.get_rgba_visual())
 
-        css = Gtk.CssProvider()
-        css.load_from_data(STYLE)
-        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css,
+        self._appearance = read_appearance()
+        self._css = Gtk.CssProvider()
+        self._css.load_from_data(panel_style(self._appearance))
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), self._css,
                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         GtkLayerShell.init_for_window(self.window)
@@ -109,21 +114,24 @@ class Tres:
         self._layout_mode = None
         self._apply_mode(read_mode())
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        self.square_buttons = []
         for tooltip, builder in (("Applications", self.applications_menu),
                                  ("Running windows", self.windows_menu),
                                  ("Applets", self.applets_menu)):
             btn = Gtk.Button()
-            btn.set_size_request(19, 19)
+            btn.set_size_request(self._appearance["square_size"],
+                                 self._appearance["square_size"])
             btn.set_relief(Gtk.ReliefStyle.NONE)
             btn.get_style_context().add_class("tres-square")
             btn.set_tooltip_text(tooltip)
             btn.connect("clicked", self.open_menu, builder)
             box.pack_start(btn, False, False, 0)
+            self.square_buttons.append(btn)
         self.window.add(box)
         self.window.show_all()
         # A change made in the separate right-click configuration dialog
         # takes effect without restarting the desktop or the panel.
-        GLib.timeout_add_seconds(1, self._check_mode)
+        GLib.timeout_add_seconds(1, self._check_settings)
 
     def _apply_mode(self, mode: str) -> None:
         if mode == "under":
@@ -142,10 +150,19 @@ class Tres:
             raise ValueError(f"Unknown Tres stacking mode: {mode}")
         self._layout_mode = mode
 
-    def _check_mode(self) -> bool:
+    def _check_settings(self) -> bool:
         mode = read_mode()
         if mode != self._layout_mode:
             self._apply_mode(mode)
+        current = read_appearance()
+        if current != self._appearance:
+            self._css.load_from_data(panel_style(current))
+            if current["square_size"] != self._appearance["square_size"]:
+                for button in self.square_buttons:
+                    button.set_size_request(current["square_size"],
+                                            current["square_size"])
+                self.window.queue_resize()
+            self._appearance = current
         return True
 
     def open_menu(self, button, builder) -> None:
@@ -266,19 +283,28 @@ class Tres:
             ("Network connections", ("nm-connection-editor",)),
             ("Bluetooth", ("blueman-manager",)),
             ("Power settings", ("xfce4-power-manager-settings",)),
-            ("Files", ("cosmic-files", "--new-window")),
         ]
         for name, argv in utilities:
             if shutil.which(argv[0]):
                 menu.append(self.item(name, lambda argv=argv: spawn_first(argv)))
-        menu.append(self.item("Terminal", lambda: spawn_first(
-            ("foot",), ("alacritty",), ("kitty",), ("cosmic-term",),
-            ("gnome-terminal",), ("xterm",))))
+        menu.append(self.item("Files", lambda: spawn_first(
+            (str(Path.home() / ".local/bin/tres-open-files"),),
+            ("/usr/bin/tres-open-files",))))
+        menu.append(self.item("Terminal", self.open_terminal))
         menu.append(self.separator())
         menu.append(self.item("Exit Tres session…", self.ask_exit))
         menu.append(self.item("Restart computer…", lambda: self.confirm_power("restart")))
         menu.append(self.item("Shut down computer…", lambda: self.confirm_power("shutdown")))
         return menu
+
+    @staticmethod
+    def open_terminal() -> None:
+        selection = read_terminal()
+        preferred = ((selection,) if selection != "auto" else ())
+        spawn_first(*(preferred + (
+            ("foot",), ("terminator",), ("alacritty",), ("kitty",),
+            ("gnome-terminal",), ("xfce4-terminal",), ("xterm",)
+        )))
 
     @staticmethod
     def audio(level: str, mute: bool = False) -> None:
