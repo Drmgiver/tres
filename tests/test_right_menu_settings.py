@@ -29,6 +29,10 @@ class TestRightMenuSettings(unittest.TestCase):
                 pass
 
             @staticmethod
+            def open_terminal():
+                pass
+
+            @staticmethod
             def item(name, callback=None):
                 return (name, callback)
 

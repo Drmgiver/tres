@@ -8,7 +8,7 @@ automatically get the software into Debian or Ubuntu archives.
 
 Open the [Debian package workflow](../.github/workflows/debian-package.yml) in this repository.
 Select a successful run and download the `tres-debian-packages` artifact.
-The ZIP contains `tres_0.4.1-1_all.deb`, an **unsigned** source package
+The ZIP contains `tres_0.5.0-1_all.deb`, an **unsigned** source package
 for review, and a lintian report. It is **not yet an official Ubuntu package**.
 
 The `Architecture: all` Debian package installs an optional
@@ -19,7 +19,7 @@ and `swaybg`.
 To test a build on Ubuntu/Pop!_OS **on a spare/test machine first**:
 
 ```bash
-sudo apt install ./tres_0.4.1-1_all.deb
+sudo apt install ./tres_0.5.0-1_all.deb
 ```
 
 Choose **Tres** at the login screen. Keep your current desktop
@@ -75,7 +75,7 @@ sudo apt install debhelper dh-python dpkg-dev lintian
 dpkg-buildpackage --build=binary --no-sign
 ```
 
-The build emits `../tres_0.4.1-1_all.deb`.
+The build emits `../tres_0.5.0-1_all.deb`.
 For a **source** package, create an upstream source tarball first (without
 the `debian` directory), then build source:
 
@@ -83,8 +83,8 @@ the `debian` directory), then build source:
 srcdir="$(basename "$PWD")"
 cd ..
 tar --exclude-vcs --exclude="$srcdir/debian" \
-    --transform="s|^$srcdir|tres-0.4.1|" \
-    -czf tres_0.4.1.orig.tar.gz "$srcdir"
+    --transform="s|^$srcdir|tres-0.5.0|" \
+    -czf tres_0.5.0.orig.tar.gz "$srcdir"
 cd "$srcdir"
 dpkg-buildpackage --build=source --no-sign
 ```

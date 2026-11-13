@@ -53,31 +53,50 @@ No applications are excluded.
 
 ## Reconfigure Tres
 
-Right-click an empty part of the desktop and choose **Reconfigure Tres**.
-A small GTK3 dialog offers three modes:
+Choose **Reconfigure Tres** from the desktop right-click menu or the rightmost
+square. The settings dialog now has four sections:
 
-- **Under** (default): the squares appear on the desktop and normal or
-  maximized windows can cover them.
-- **Over**: the squares stay above normal and maximized windows, but do
-  not reserve screen space.
-- **Space reserved**: the squares remain visible above windows while Labwc
-  reserves a narrow top strip, so maximized windows start below them.
+- **Appearance:** Under / Over / Space reserved; white-square color, hover
+  color, square size, and solid-color wallpaper. Your familiar **Under** mode,
+  white 19px squares and dark wallpaper remain the defaults. Square changes
+  are applied by the running panel, while wallpaper color takes effect after
+  the next Tres login. Custom wallpapers are never overwritten.
+- **Display:** choose an active Labwc/Wayland output and its scale (75–300%).
+  Uses `wlr-randr` and preserves your existing scale block in
+  `~/.config/tres/labwc/autostart`, including the original 150% laptop setup.
+  Does **not** modify COSMIC display settings or monitor resolution.
+- **Keyboard:** add or change Screenshot, Open Files and Terminal shortcuts
+  using Labwc key notation such as `Print`, `W-e`, and `W-Return`.
+  Edits are inserted into a **marked section only** of Tres's private
+  `rc.xml`; other custom bindings are preserved. Applies using
+  `labwc --reconfigure`.
+- **Default applications:** choose the file manager, browser, email, text
+  editor, PDF viewer and Tres's preferred terminal. File and URL defaults
+  use the standard XDG MIME system and therefore also affect other Linux
+  desktop sessions for the same user; Tres's terminal choice is Tres-only.
 
-Choose a mode and press **Apply**. The panel picks up the new setting within
-about a second; no logout is required. The setting is saved at
-`~/.config/tres/panel-mode` and remains across logins. **Cancel** leaves
-the previous setting unchanged.
+The right-square **Files** command no longer invokes `cosmic-files`. It uses
+the selected folder handler and falls back to a compatible installed
+file manager, never automatically launching COSMIC Files. If COSMIC Files
+was your only file manager, install another (for example,
+`sudo apt install thunar`) and choose it under Default applications.
 
-**Reconfigure Tres** is also available from the rightmost square, in place
-of the incompatible COSMIC System Settings shortcut. Tres's settings dialog
-currently manages the three-square stacking mode; it is not a full
-desktop-settings suite.
+The original Labwc **Reconfigure** and **Exit** commands remain in the
+desktop right-click menu. The three-square layout remains completely
+unchanged unless you explicitly choose different appearance settings.
 
-The right-click menu also retains Labwc's original **Reconfigure**
-(reload compositor configuration) and **Exit** (log out) actions.
-A customized `~/.config/tres/labwc/menu.xml` is never overwritten.
-When upgrading a script-installed Tres, run `bash scripts/update-panel.sh`,
-then log out and back in once to load the new panel code.
+To update a script-based Tres installation without reinstalling COSMIC or
+running the full APT installer:
+
+```bash
+cd ~/Tres
+git pull --ff-only
+bash scripts/update-panel.sh
+```
+
+Then log out and back into Tres **once** to load the updated panel.
+The update script migrates only Tres's original solid-color wallpaper
+command, leaving any custom wallpaper and your existing display scaling alone.
 
 ## Why Labwc?
 
@@ -105,15 +124,14 @@ This is not yet a package in Ubuntu's official archive.
 Clone this repository and run the installer from inside it:
 
 ```bash
-# Until GitHub's repository rename is completed, use its current URL:
-git clone https://github.com/Drmgiver/tres-labwc.git Tres
+git clone https://github.com/Drmgiver/Tres.git
 cd Tres
 bash install.sh
 ```
 
 The installer:
-- Installs `labwc`, `python3-gi`, GTK3's introspection bindings,
-  `gir1.2-gtklayershell-0.1`, `wlrctl`, `foot`, and `swaybg` through apt.
+- Installs `labwc`, `python3-gi`, GTK3 bindings, `wlrctl`, `foot`,
+  `swaybg`, `grim`, `slurp`, and `wlr-randr` through apt.
 - Installs Tres files into `~/.local/share/tres/` and launcher
   `~/.local/bin/tres-panel`.
 - Creates a **private** `~/.config/tres/labwc/` configuration (without
