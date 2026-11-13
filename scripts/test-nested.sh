@@ -9,4 +9,4 @@ if ! command -v labwc >/dev/null 2>&1; then
     exit 1
 fi
 echo 'Starting Labwc nested in a window. Use Alt+F4 to close the nested session.'
-WLR_BACKENDS=wayland WLR_WL_OUTPUTS=1 labwc -C "$HOME/.config/tres-labwc/labwc"
+WLR_BACKENDS=wayland WLR_WL_OUTPUTS=1 labwc -C "$HOME/.config/tres/labwc"

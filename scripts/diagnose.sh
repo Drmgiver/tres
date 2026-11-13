@@ -17,5 +17,5 @@ try:
 except Exception as exc:
     print('[no]  GTK3 layer-shell:', exc)
 PY
-printf '\nFor errors inspect: ~/.cache/tres-labwc/panel.log\n'
+printf '\nFor errors inspect: ~/.cache/tres/panel.log\n'
 # Do NOT print window titles: they may contain private material.
