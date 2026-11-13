@@ -9,9 +9,10 @@ done
 /usr/bin/python3 - <<'PY'
 try:
     import gi
+    gi.require_version('Gdk', '3.0')
     gi.require_version('Gtk', '3.0')
     gi.require_version('GtkLayerShell', '0.1')
-    from gi.repository import Gtk, GtkLayerShell
+    from gi.repository import Gdk, Gio, Gtk, GtkLayerShell
     print('[yes] Python GTK3 and GTK layer-shell')
 except Exception as exc:
     print('[no]  GTK3 layer-shell:', exc)
