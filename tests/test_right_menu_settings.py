@@ -25,6 +25,10 @@ class TestRightMenuSettings(unittest.TestCase):
 
         class FakePanel:
             @staticmethod
+            def ask_exit():
+                pass
+
+            @staticmethod
             def item(name, callback=None):
                 return (name, callback)
 
