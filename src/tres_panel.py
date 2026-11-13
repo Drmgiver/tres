@@ -300,7 +300,7 @@ class Tres:
     @staticmethod
     def open_terminal() -> None:
         selection = read_terminal()
-        preferred = ((selection,) if selection != "auto" else ())
+        preferred = ((selection,),) if selection != "auto" else ()
         spawn_first(*(preferred + (
             ("foot",), ("terminator",), ("alacritty",), ("kitty",),
             ("gnome-terminal",), ("xfce4-terminal",), ("xterm",)
