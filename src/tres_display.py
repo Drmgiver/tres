@@ -36,7 +36,7 @@ def parse_output_text(text: str) -> list[tuple[str, float]]:
 
     for line in text.splitlines():
         heading = re.fullmatch(
-            r'([A-Za-z0-9][A-Za-z0-9_.:-]*)(?:\\s+"[^"]*")?\\s*',
+            r'([A-Za-z0-9][A-Za-z0-9_.:-]*)(?:\s+"[^"]*")?\s*',
             line,
         ) if line and not line[0].isspace() else None
         if heading:
@@ -52,7 +52,7 @@ def parse_output_text(text: str) -> list[tuple[str, float]]:
         if property_line.startswith("Enabled:"):
             enabled = property_line.split(":", 1)[1].strip().lower() == "yes"
         elif property_line.startswith("Scale:"):
-            match = re.fullmatch(r"Scale:\\s*([0-9]+(?:\\.[0-9]+)?)", property_line)
+            match = re.fullmatch(r"Scale:\s*([0-9]+(?:\.[0-9]+)?)", property_line)
             if not match:
                 raise DisplayError(f"Invalid scale reported for {name}.")
             scale = float(match.group(1))
