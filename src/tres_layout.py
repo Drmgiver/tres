@@ -10,7 +10,7 @@ DEFAULT_MODE = "under"
 
 
 def mode_path() -> Path:
-    """Use Tres's own configuration, never Labwc/COSMIC's shared settings."""
+    """Use Tres's own configuration instead of modifying other desktop settings."""
     root = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
     return root / "tres" / "panel-mode"
 
