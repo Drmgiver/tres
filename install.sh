@@ -24,7 +24,7 @@ if command -v dpkg-query >/dev/null 2>&1; then
         fi
     done
 fi
-if [[ -e "$SESSION" ]] && ! grep -q '^X-Tres=true
+if [[ -e "$SESSION" ]] && ! grep -qx 'X-Tres=true' "$SESSION"; then
     echo "Refusing to replace unknown existing session: $SESSION" >&2
     exit 1
 fi
