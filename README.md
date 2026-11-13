@@ -307,7 +307,8 @@ The helper first applies the scale, then adds a clearly marked block to
 `~/.config/tres/labwc/autostart`. It does not change another session's
 scaling. To change it again, rerun with a different factor. Use `1.25`,
 `1.5`, `1.75`, or `2` according to your display. If you have multiple
-monitors, this simple helper currently remembers only one chosen output.
+monitors, repeat the command for each output you want to configure. Tres
+preserves each output's scale setting independently without erasing the others.
 
 ## Shortcuts & recovery
 
