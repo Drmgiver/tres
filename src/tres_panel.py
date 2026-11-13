@@ -28,6 +28,8 @@ except (ImportError, ValueError) as error:
 
 from tres_core import activate, request_power_action, submenu_pages, windows  # noqa: E402
 from tres_layout import read_mode  # noqa: E402
+from tres_position import (read_position, save_position, coordinates, with_coordinates,
+                           panel_size)  # noqa: E402
 from tres_preferences import read_appearance  # noqa: E402
 from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
 from tres_audio import audio_backend, change_volume, volume_label, AudioError  # noqa: E402
@@ -111,9 +113,14 @@ class Tres:
                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         GtkLayerShell.init_for_window(self.window)
+        # Explicit top-left anchors avoid relying on compositor implicit centering.
+        # Both axes use screen-relative margins, so any edge can be selected.
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.TOP, True)
-        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.TOP, 3)
+        GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.LEFT, True)
         GtkLayerShell.set_keyboard_mode(self.window, GtkLayerShell.KeyboardMode.NONE)
+        self._position = read_position()
+        self._drag = None
+        self._suppress_click = False
         self._layout_mode = None
         self._apply_mode(read_mode())
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
@@ -127,14 +134,97 @@ class Tres:
             btn.set_relief(Gtk.ReliefStyle.NONE)
             btn.get_style_context().add_class("tres-square")
             btn.set_tooltip_text(tooltip)
+            btn.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
+                           Gdk.EventMask.BUTTON_RELEASE_MASK |
+                           Gdk.EventMask.POINTER_MOTION_MASK)
+            btn.connect("button-press-event", self._drag_press)
+            btn.connect("motion-notify-event", self._drag_motion)
+            btn.connect("button-release-event", self._drag_release)
             btn.connect("clicked", self.open_menu, builder)
             box.pack_start(btn, False, False, 0)
             self.square_buttons.append(btn)
         self.window.add(box)
+        self.window.connect("size-allocate", self._on_size_allocate)
         self.window.show_all()
+        self._apply_position(self._position)
         # A change made in the separate right-click configuration dialog
         # takes effect without restarting the desktop or the panel.
         GLib.timeout_add_seconds(1, self._check_settings)
+
+    def _monitor_dimensions(self):
+        monitor = GtkLayerShell.get_monitor(self.window)
+        if monitor is None:
+            display = Gdk.Display.get_default()
+            monitor = display.get_primary_monitor() or display.get_monitor(0)
+        if monitor is None:
+            return None
+        geometry = monitor.get_geometry()
+        return geometry.width, geometry.height
+
+    def _panel_dimensions(self):
+        width, height = panel_size(self._appearance["square_size"])
+        # GTK's actual allocated size takes precedence over the CSS minimum.
+        allocated_width = self.window.get_allocated_width()
+        allocated_height = self.window.get_allocated_height()
+        return (max(width, allocated_width), max(height, allocated_height))
+
+    def _apply_position(self, position):
+        monitor = self._monitor_dimensions()
+        if monitor is None:
+            return
+        width, height = self._panel_dimensions()
+        x, y = coordinates(position, width, height, *monitor)
+        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.LEFT, x)
+        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.TOP, y)
+
+    def _on_size_allocate(self, _window, _allocation):
+        if self._drag is None:
+            self._apply_position(self._position)
+
+    def _drag_press(self, _button, event):
+        if event.button != 1 or not (event.state & Gdk.ModifierType.SUPER_MASK):
+            return False
+        monitor = self._monitor_dimensions()
+        if monitor is None:
+            return False
+        width, height = self._panel_dimensions()
+        x, y = coordinates(self._position, width, height, *monitor)
+        self._drag = (float(event.x_root), float(event.y_root), x, y, False)
+        self._suppress_click = False
+        return True
+
+    def _drag_motion(self, _button, event):
+        if self._drag is None:
+            return False
+        start_x, start_y, initial_x, initial_y, moved = self._drag
+        dx, dy = float(event.x_root) - start_x, float(event.y_root) - start_y
+        if not moved and abs(dx) + abs(dy) < 3:
+            return True
+        monitor = self._monitor_dimensions()
+        if monitor is None:
+            return True
+        width, height = self._panel_dimensions()
+        new_x = max(0, min(monitor[0] - width, round(initial_x + dx)))
+        new_y = max(0, min(monitor[1] - height, round(initial_y + dy)))
+        # Keep the selected edge, but move freely using offsets on both axes.
+        self._position = with_coordinates(self._position["edge"], new_x, new_y,
+                                          width, height, *monitor)
+        self._drag = (start_x, start_y, initial_x, initial_y, True)
+        self._apply_position(self._position)
+        return True
+
+    def _drag_release(self, _button, event):
+        if self._drag is None or event.button != 1:
+            return False
+        moved = self._drag[4]
+        self._drag = None
+        if moved:
+            self._suppress_click = True
+            try:
+                save_position(self._position)
+            except OSError as error:
+                print(f"Could not save Tres panel position: {error}", file=sys.stderr)
+        return True
 
     def _apply_mode(self, mode: str) -> None:
         if mode == "under":
@@ -157,6 +247,10 @@ class Tres:
         mode = read_mode()
         if mode != self._layout_mode:
             self._apply_mode(mode)
+        latest_position = read_position()
+        if self._drag is None and latest_position != self._position:
+            self._position = latest_position
+            self._apply_position(self._position)
         current = read_appearance()
         if current != self._appearance:
             self._css.load_from_data(panel_style(current))
@@ -166,9 +260,13 @@ class Tres:
                                             current["square_size"])
                 self.window.queue_resize()
             self._appearance = current
+            self._apply_position(self._position)
         return True
 
     def open_menu(self, button, builder) -> None:
+        if self._suppress_click:
+            self._suppress_click = False
+            return
         menu = builder()
         menu.show_all()
         menu.popup_at_widget(button, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
