@@ -74,3 +74,29 @@ def request_power_action(action: str, timeout: float = 15.0) -> None:
         detail = (result.stderr or result.stdout or
                   "The system refused the power request").strip()
         raise RuntimeError(detail)
+
+
+
+def submenu_pages(count: int, max_rows: int = 12) -> list[tuple[int, int]]:
+    """Split a potentially tall GTK3/Wayland menu into bounded submenu ranges.
+
+    The ranges are start-inclusive and end-exclusive. When a menu would have
+    more than max_rows page links, each page covers a larger slice that can
+    itself be divided recursively, keeping *every* menu level short.
+    """
+    if count < 0:
+        raise ValueError("Menu item count must not be negative")
+    if max_rows < 2:
+        raise ValueError("Menu size must be at least two")
+    if not count:
+        return []
+    if count <= max_rows:
+        return [(0, count)]
+
+    page_size = max_rows
+    while (count + page_size - 1) // page_size > max_rows:
+        page_size *= max_rows
+    return [
+        (start, min(start + page_size, count))
+        for start in range(0, count, page_size)
+    ]

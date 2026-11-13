@@ -1,3 +1,11 @@
+tres (0.3.1-1) unstable; urgency=medium
+
+  * Keep large application categories accessible on Wayland by paging
+    long GTK3 submenus instead of relying on broken menu scrolling.
+  * Preserve the app ordering and launcher actions.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Thu, 12 Nov 2026 23:00:00 -0600
+
 tres (0.3.0-1) unstable; urgency=medium
 
   * Add Reconfigure Tres to Labwc's desktop right-click menu.

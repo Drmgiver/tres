@@ -18,6 +18,17 @@ No permanent taskbar, dock, or full-width panel. By default, the three squares
 sit above the wallpaper but **below normal windows**, so maximizing a window
 covers them completely. Users can choose different stacking behavior.
 
+## Large application categories
+
+GTK3's long submenu scrolling can stop prematurely on Wayland, hiding
+applications at the bottom of a large category. Tres avoids that limitation:
+categories with **more than 12 apps** display numbered, alphabetically
+ordered sections (**Apps 1–12**, **Apps 13–24**, etc.). Select a section
+to see its applications and launch them normally. Smaller categories keep
+their existing one-level menu. Very large categories are grouped again
+as needed so that no submenu requires scrolling to reach its final entry.
+No applications are excluded.
+
 ## Reconfigure Tres
 
 Right-click an empty part of the desktop and choose **Reconfigure Tres**.
