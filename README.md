@@ -39,6 +39,16 @@ bash scripts/update-panel.sh
 The application menu gets the new launcher on its next opening; logging out
 and back in is not normally required for this standalone utility.
 
+## Search applications
+
+Click the **left white square** and choose **Search Applications…** to open a
+small native GTK3 search window. Type to filter installed graphical applications
+by name, description or desktop ID; use arrow keys and Enter or double-click a
+result to launch it. Escape closes the search window. Search uses the same
+visible desktop entries and launch behavior as the left-square categories,
+including the Tres Synaptic compatibility wrapper. The original three squares
+and categorized menus remain unchanged.
+
 ## Large application categories
 
 GTK3's long submenu scrolling can stop prematurely on Wayland, hiding
