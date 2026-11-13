@@ -15,7 +15,7 @@ from tres_preferences import (DEFAULT_APPEARANCE, read_appearance, save_appearan
                               read_terminal, save_terminal)
 from tres_display import DisplayError, apply_scale, output_info, parse_output_text
 from tres_shortcuts import DEFAULT_KEYS, read_shortcuts, save_shortcuts
-from tres_open import FILE_MANAGERS, FileManagerError, is_supported_file_manager, open_home
+from tres_open import FILE_MANAGERS, FileManagerError, file_manager_choices, open_home
 
 
 class PreferencesTests(TestCase):
@@ -287,29 +287,98 @@ class UpgradeTests(TestCase):
 
 
 class FileManagerTests(TestCase):
-    def test_supported_file_manager_uses_executable_not_brand(self):
-        class App:
-            def __init__(self, executable):
-                self.executable = executable
-            def get_executable(self):
-                return self.executable
-        self.assertTrue(is_supported_file_manager(App("/usr/bin/thunar")))
-        self.assertTrue(is_supported_file_manager(App("nemo")))
-        self.assertFalse(is_supported_file_manager(App("/usr/bin/desktop-bound-files")))
-        self.assertFalse(is_supported_file_manager(App("")))
+    class FakeApp:
+        def __init__(self, app_id, name, executable, categories="", mime_types=()):
+            self.app_id = app_id
+            self.name = name
+            self.executable = executable
+            self.categories = categories
+            self.mime_types = mime_types
+
+        def get_id(self):
+            return self.app_id
+
+        def get_name(self):
+            return self.name
+
+        def get_executable(self):
+            return self.executable
+
+        def get_categories(self):
+            return self.categories
+
+        def get_supported_types(self):
+            return self.mime_types
+
+    def test_discovers_unregistered_file_managers_by_desktop_category(self):
+        default = self.FakeApp("org.example.Files.desktop", "Files", "files")
+        alternate = self.FakeApp(
+            "org.example.AlternateFiles.desktop", "Alternate Files",
+            "unlisted-file-manager", categories="Utility;FileManager;",
+        )
+        unrelated = self.FakeApp("org.example.Writer.desktop", "Writer", "writer",
+                                 categories="Office;WordProcessor;")
+        discovered = file_manager_choices(
+            registered=[default],
+            installed=[alternate, unrelated],
+            current=default,
+        )
+        self.assertEqual(
+            set(discovered),
+            {"org.example.Files.desktop", "org.example.AlternateFiles.desktop"},
+        )
+        self.assertIs(discovered[alternate.get_id()], alternate)
+
+    def test_all_folder_mime_handlers_and_default_are_selectable(self):
+        unlisted = self.FakeApp("org.example.NewFiles.desktop", "New Files", "newfiles")
+        folder_handler = self.FakeApp("org.example.DiskTool.desktop", "Disk Tool", "disktool",
+                                      mime_types=("inode/directory",))
+        registered = self.FakeApp("org.example.Folders.desktop", "Folders", "folders")
+        discovered = file_manager_choices(
+            [registered], [unlisted, folder_handler], unlisted,
+        )
+        self.assertEqual(
+            set(discovered),
+            {registered.get_id(), unlisted.get_id(), folder_handler.get_id()},
+        )
+
+    def test_executable_hints_are_additive_not_a_restriction(self):
+        known = self.FakeApp("org.example.Thunar.desktop", "Files", "thunar")
+        unknown = self.FakeApp("org.example.NewManager.desktop", "Files", "new-manager",
+                               categories="FileManager;")
+        selected = file_manager_choices([], [known, unknown])
+        self.assertEqual(len(selected), 2)
+        self.assertIn("thunar", FILE_MANAGERS)
+
+    def test_chosen_default_is_launched_even_without_known_executable(self):
+        import types
+        current = self.FakeApp(
+            "org.example.AlternateFiles.desktop", "Alternate Files", "my-own-manager",
+        )
+        opened = []
+        current.launch = lambda files, context: opened.append((files, context)) or True
+        gi = types.ModuleType("gi")
+        gi.require_version = lambda *_args: None
+        gi_repo = types.ModuleType("gi.repository")
+        gi_repo.Gio = types.SimpleNamespace(
+            AppInfo=types.SimpleNamespace(
+                get_default_for_type=lambda content_type, supports_uri: current,
+            ),
+            File=types.SimpleNamespace(new_for_path=lambda path: path),
+        )
+        gi.repository = gi_repo
+        with patch.dict(sys.modules, {"gi": gi, "gi.repository": gi_repo}):
+            open_home()
+        self.assertEqual(len(opened), 1)
+        self.assertEqual(opened[0][0], [str(Path.home())])
 
     @patch("tres_open.subprocess.Popen")
-    @patch("tres_open.shutil.which", side_effect=lambda cmd: "/usr/bin/" + cmd if cmd == "thunar" else None)
-    def test_unsupported_default_falls_back_to_standalone_manager(self, which, popen):
-        class Bad:
-            def get_id(self): return "org.example.DesktopBoundFiles.desktop"
-            def get_executable(self): return "desktop-bound-files"
-            def get_name(self): return "Desktop Bound Files"
-        # Simulate missing GI on the build machine: use an independent fallback.
+    @patch("tres_open.shutil.which",
+           side_effect=lambda cmd: "/usr/bin/" + cmd if cmd == "thunar" else None)
+    def test_no_gio_uses_standalone_fallback(self, which, popen):
         with patch.dict(sys.modules, {"gi": None}):
             open_home()
         self.assertEqual(popen.call_args.args[0][0], "thunar")
-        self.assertNotIn("desktop-bound-files", FILE_MANAGERS)
 
     def test_right_square_uses_default_file_manager(self):
         panel = (ROOT / "src/tres_panel.py").read_text()
@@ -323,7 +392,8 @@ class FileManagerTests(TestCase):
         self.assertIn('app_id == "__keep__"', settings)
         self.assertIn('"x-scheme-handler/http"', settings)
         self.assertIn('"text/html"', settings)
-        self.assertIn('not is_supported_file_manager(existing)', settings)
+        self.assertIn('file_manager_choices(', settings)
+        self.assertIn('Gio.AppInfo.get_all()', settings)
 
     def test_default_files_helper_is_packaged_and_installed(self):
         install = (ROOT / "debian/tres.install").read_text()
