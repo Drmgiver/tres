@@ -39,6 +39,17 @@ bash scripts/update-panel.sh
 The application menu gets the new launcher on its next opening; logging out
 and back in is not normally required for this standalone utility.
 
+## Keyboard search and volume readout
+
+Press **Super+Space** inside Tres to open Search Applications without using
+the mouse. The shortcut appears in Reconfigure Tres → Keyboard, where it can
+be changed or disabled. Upgrading initializes the shortcut only once, and
+will not take over an existing Super+Space binding from another application.
+Existing custom shortcuts and other desktop sessions remain unchanged.
+The right white square displays the default audio output volume and mute state
+beside the battery level when opened; it reflects current levels after volume
+changes. If no audio server is reachable, it reports the volume as unavailable.
+
 ## Search applications
 
 Click the **left white square** and choose **Search Applications…** to open a
