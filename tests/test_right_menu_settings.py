@@ -1,4 +1,4 @@
-"""Right square must open Tres settings, not a COSMIC-only settings panel."""
+"""Right square must open native Tres settings without external settings dependencies."""
 import ast
 from datetime import datetime
 from pathlib import Path
@@ -82,7 +82,7 @@ class TestRightMenuSettings(unittest.TestCase):
         self.assertIn("Restart computer…", actions)
         self.assertIn("Shut down computer…", actions)
 
-    def test_no_cosmic_settings_launcher_in_right_menu(self):
+    def test_no_external_settings_launcher_in_right_menu(self):
         tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
         panel = next(node for node in tree.body
                      if isinstance(node, ast.ClassDef) and node.name == "Tres")
@@ -93,7 +93,7 @@ class TestRightMenuSettings(unittest.TestCase):
             node.value for node in ast.walk(applets)
             if isinstance(node, ast.Constant) and isinstance(node.value, str)
         ]
-        self.assertNotIn("cosmic-settings", strings)
+        self.assertNotIn("System settings", strings)
 
 
 if __name__ == "__main__":
