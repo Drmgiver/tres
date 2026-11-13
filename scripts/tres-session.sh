@@ -1,5 +1,5 @@
 #!/bin/sh
-# A dedicated session; never modifies or replaces Pop!_OS's COSMIC session.
+# A standalone session that does not modify other desktop environments.
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=labwc
 export XDG_SESSION_DESKTOP=tres

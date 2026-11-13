@@ -7,7 +7,7 @@ import shutil
 import sys
 
 from tres_display import DisplayError, apply_scale, output_info
-from tres_open import _is_cosmic
+from tres_open import is_supported_file_manager
 from tres_layout import MODES, read_mode, save_mode
 from tres_preferences import (DEFAULT_APPEARANCE, TERMINALS, read_appearance,
                               read_terminal, save_appearance, save_terminal)
@@ -164,11 +164,11 @@ def main() -> None:
     apply_button.connect("clicked", apply_appearance)
     appearance.pack_start(apply_button, False, False, 0)
 
-    # Display scaling: read actual Wayland outputs, not COSMIC display settings.
+    # Display scaling: read actual Wayland outputs, independent of other sessions.
     display = page(notebook, "Display")
     display.pack_start(title("Display scale"), False, False, 0)
     display.pack_start(label(
-        "This affects only the active Tres/Labwc session, not COSMIC. "
+        "This affects only the active Tres/Labwc session. "
         "Your saved scale will be restored at the next Tres login.", True
     ), False, False, 0)
     output = Gtk.ComboBoxText()
@@ -235,7 +235,7 @@ def main() -> None:
     defaults.pack_start(title("Default applications"), False, False, 0)
     defaults.pack_start(label(
         "These are standard XDG file and URL defaults. Changing them also "
-        "affects applications in other desktop sessions, including COSMIC. "
+        "affects applications in other desktop sessions for this user. "
         "Tres's Files button uses your chosen file manager.", True
     ), False, False, 0)
     combos = {}
@@ -245,19 +245,19 @@ def main() -> None:
         chooser = Gtk.ComboBoxText()
         available = {}
         existing = Gio.AppInfo.get_default_for_type(mime, False)
-        if mime == "inode/directory" and existing and _is_cosmic(existing):
-            chooser.append("__keep__", "Current: COSMIC Files (choose another)")
+        if mime == "inode/directory" and existing and not is_supported_file_manager(existing):
+            chooser.append("__keep__", "Current file manager is not supported (choose another)")
         else:
             chooser.append("__keep__", "Leave unchanged")
         for app in Gio.AppInfo.get_all_for_type(mime):
             app_id = app.get_id()
-            if mime == "inode/directory" and _is_cosmic(app):
-                # COSMIC Files relies on a different desktop's services.
+            if mime == "inode/directory" and not is_supported_file_manager(app):
+                # Only offer file managers known to work independently.
                 continue
             if app_id and app_id not in available:
                 available[app_id] = app
         if existing and existing.get_id() and not (
-            mime == "inode/directory" and _is_cosmic(existing)
+            mime == "inode/directory" and not is_supported_file_manager(existing)
         ):
             available[existing.get_id()] = existing
         for app_id, app in sorted(available.items(),

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotently install Tres-only launchers without sudo or modifying COSMIC.
+# Idempotently install Tres-only launchers without sudo or altering other desktops.
 set -euo pipefail
 BIN="$HOME/.local/bin"
 AUTOSTART="$HOME/.config/tres/labwc/autostart"

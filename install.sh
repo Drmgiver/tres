@@ -12,7 +12,7 @@ if [[ ${EUID} -eq 0 ]]; then
     exit 1
 fi
 if ! command -v apt-get >/dev/null 2>&1; then
-    echo 'This installer targets Ubuntu/Pop!_OS apt systems. See README for manual setup.' >&2
+    echo 'This installer targets apt-based Linux systems. See README for manual setup.' >&2
     exit 1
 fi
 if [[ -e "$SESSION" ]] && ! grep -q '^X-Tres=true$' "$SESSION"; then
@@ -84,5 +84,5 @@ sudo install -m 0644 "$tmpfile" "$SESSION"
 
 echo
 echo 'Installed. Log out, then choose "Tres" at the login screen.'
-echo 'Your COSMIC session was not altered. Test first; avoid unsaved work.'
-echo 'To test nested inside COSMIC: bash scripts/test-nested.sh'
+echo 'Other desktop sessions were not altered. Test first; avoid unsaved work.'
+echo 'To test nested inside an existing Wayland desktop: bash scripts/test-nested.sh'

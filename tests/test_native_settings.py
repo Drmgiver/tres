@@ -15,7 +15,7 @@ from tres_preferences import (DEFAULT_APPEARANCE, read_appearance, save_appearan
                               read_terminal, save_terminal)
 from tres_display import DisplayError, apply_scale, output_info
 from tres_shortcuts import DEFAULT_KEYS, read_shortcuts, save_shortcuts
-from tres_open import FILE_MANAGERS, FileManagerError, open_home
+from tres_open import FILE_MANAGERS, FileManagerError, is_supported_file_manager, open_home
 
 
 class PreferencesTests(TestCase):
@@ -186,22 +186,33 @@ class UpgradeTests(TestCase):
 
 
 class FileManagerTests(TestCase):
+    def test_supported_file_manager_uses_executable_not_brand(self):
+        class App:
+            def __init__(self, executable):
+                self.executable = executable
+            def get_executable(self):
+                return self.executable
+        self.assertTrue(is_supported_file_manager(App("/usr/bin/thunar")))
+        self.assertTrue(is_supported_file_manager(App("nemo")))
+        self.assertFalse(is_supported_file_manager(App("/usr/bin/desktop-bound-files")))
+        self.assertFalse(is_supported_file_manager(App("")))
+
     @patch("tres_open.subprocess.Popen")
     @patch("tres_open.shutil.which", side_effect=lambda cmd: "/usr/bin/" + cmd if cmd == "thunar" else None)
-    def test_cosmic_default_falls_back_to_non_cosmic_manager(self, which, popen):
+    def test_unsupported_default_falls_back_to_standalone_manager(self, which, popen):
         class Bad:
-            def get_id(self): return "com.system76.CosmicFiles.desktop"
-            def get_executable(self): return "cosmic-files"
-            def get_name(self): return "COSMIC Files"
-        # Simulate missing GI on the build machine: must use non-COSMIC fallback.
+            def get_id(self): return "org.example.DesktopBoundFiles.desktop"
+            def get_executable(self): return "desktop-bound-files"
+            def get_name(self): return "Desktop Bound Files"
+        # Simulate missing GI on the build machine: use an independent fallback.
         with patch.dict(sys.modules, {"gi": None}):
             open_home()
         self.assertEqual(popen.call_args.args[0][0], "thunar")
-        self.assertNotIn("cosmic-files", FILE_MANAGERS)
+        self.assertNotIn("desktop-bound-files", FILE_MANAGERS)
 
-    def test_right_square_does_not_hardcode_cosmic_files(self):
+    def test_right_square_uses_default_file_manager(self):
         panel = (ROOT / "src/tres_panel.py").read_text()
-        self.assertNotIn('("Files", ("cosmic-files"', panel)
+        self.assertNotIn('("Files", (', panel)
         self.assertIn("tres-open-files", panel)
         self.assertIn("open_terminal", panel)
 
@@ -211,7 +222,7 @@ class FileManagerTests(TestCase):
         self.assertIn('app_id == "__keep__"', settings)
         self.assertIn('"x-scheme-handler/http"', settings)
         self.assertIn('"text/html"', settings)
-        self.assertIn('_is_cosmic(existing)', settings)
+        self.assertIn('not is_supported_file_manager(existing)', settings)
 
     def test_default_files_helper_is_packaged_and_installed(self):
         install = (ROOT / "debian/tres.install").read_text()

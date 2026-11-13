@@ -10,4 +10,4 @@ if [[ ! -f "$WRAPPER" ]] || ! grep -q '^# A dedicated session' "$WRAPPER"; then
 fi
 sh -n "$ROOT/scripts/tres-session.sh"
 sudo install -m 0755 "$ROOT/scripts/tres-session.sh" "$WRAPPER"
-echo 'Updated Tres standalone launcher and debugging. COSMIC is unchanged.'
+echo 'Updated Tres standalone launcher and debugging. Other desktops are unchanged.'

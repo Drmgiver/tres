@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
-    echo 'Log into your regular COSMIC Wayland session to run this test.' >&2
+    echo 'Log into an existing Wayland session to run this test.' >&2
     exit 1
 fi
 if ! command -v labwc >/dev/null 2>&1; then

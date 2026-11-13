@@ -69,7 +69,7 @@ def apply_scale(output: str, scale: float, autostart: Path | None = None) -> Non
     path.parent.mkdir(parents=True, exist_ok=True)
     old = path.read_text(encoding="utf-8") if path.exists() else "#!/bin/sh\n"
     block = (f"{START}\n"
-             "# Output scaling is set for Tres only, never for COSMIC.\n"
+             "# Output scaling is set for the Tres session only.\n"
              f"(sleep 1; wlr-randr --output {shlex.quote(output)} "
              f"--scale {shlex.quote(normalized)}) >/dev/null 2>&1 &\n"
              f"{END}\n")

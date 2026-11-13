@@ -23,7 +23,7 @@ covers them completely. Users can choose different stacking behavior.
 Open **Applications → Accessories → Tres Screenshot**. The small GTK3 GUI
 supports **Entire screen** and **Select an area** with an optional 0, 3, or
 5-second delay, plus a Save As dialog. It uses Grim for capturing and Slurp
-for area selection; it does not depend on COSMIC or GNOME's screenshot portal.
+for area selection; it does not require a desktop-specific screenshot portal.
 Press Escape while selecting an area to return to the dialog.
 
 The screenshot app is separate from existing Ubuntu screenshot tools. Tres
@@ -64,7 +64,7 @@ square. The settings dialog now has four sections:
 - **Display:** choose an active Labwc/Wayland output and its scale (75–300%).
   Uses `wlr-randr` and preserves your existing scale block in
   `~/.config/tres/labwc/autostart`, including the original 150% laptop setup.
-  Does **not** modify COSMIC display settings or monitor resolution.
+  Does **not** change another desktop session's settings or monitor resolution.
 - **Keyboard:** add or change Screenshot, Open Files and Terminal shortcuts
   using Labwc key notation such as `Print`, `W-e`, and `W-Return`.
   Edits are inserted into a **marked section only** of Tres's private
@@ -75,17 +75,16 @@ square. The settings dialog now has four sections:
   use the standard XDG MIME system and therefore also affect other Linux
   desktop sessions for the same user; Tres's terminal choice is Tres-only.
 
-The right-square **Files** command no longer invokes `cosmic-files`. It uses
-the selected folder handler and falls back to a compatible installed
-file manager, never automatically launching COSMIC Files. If COSMIC Files
-was your only file manager, install another (for example,
+The right-square **Files** command uses the selected folder handler and
+falls back to a supported installed standalone file manager. If there is
+no supported file manager installed, install one (for example,
 `sudo apt install thunar`) and choose it under Default applications.
 
 The original Labwc **Reconfigure** and **Exit** commands remain in the
 desktop right-click menu. The three-square layout remains completely
 unchanged unless you explicitly choose different appearance settings.
 
-To update a script-based Tres installation without reinstalling COSMIC or
+To update a script-based Tres installation without reinstalling another desktop or
 running the full APT installer:
 
 ```bash
@@ -100,14 +99,14 @@ command, leaving any custom wallpaper and your existing display scaling alone.
 
 ## Why Labwc?
 
-Labwc is a lightweight standalone **Wayland compositor**. Unlike the earlier
-COSMIC-overlay prototype, Tres with Labwc runs **instead of** COSMIC at login.
+Labwc is a lightweight standalone **Wayland compositor**. Tres uses Labwc
+as an independent session, selected separately at the login screen.
 It doesn't rely on X11/Openbox, and its window selector uses wlroots's native
 `wlr-foreign-toplevel-management` through `wlrctl`.
 
 **Hybrid graphics caution:** a Wayland session does **not** guarantee a given
 GPU/driver combination works with Labwc. Test the nested session first, then
-try the dedicated login session. Keep COSMIC installed as your fallback.
+try the dedicated login session. Keep your existing desktop as a fallback.
 
 ## Debian package (experimental)
 
@@ -119,7 +118,7 @@ particular, **existing users of the GitHub shell installer need to migrate
 their autostart file** so the login session runs the package-managed panel.
 This is not yet a package in Ubuntu's official archive.
 
-## Installation (Pop!_OS / Ubuntu, apt)
+## Installation (apt-based Linux distributions)
 
 Clone this repository and run the installer from inside it:
 
@@ -135,11 +134,11 @@ The installer:
 - Installs Tres files into `~/.local/share/tres/` and launcher
   `~/.local/bin/tres-panel`.
 - Creates a **private** `~/.config/tres/labwc/` configuration (without
-  editing `~/.config/labwc/` or COSMIC settings).
+  editing `~/.config/labwc/` or other desktops' settings).
 - Adds **Tres** to your login manager's session list with a small
   system-wide wrapper and `.desktop` file, requiring `sudo`.
 
-**Test it nested** *inside COSMIC* before logging into it:
+**Test it nested** *inside another Wayland desktop* before logging into it:
 
 ```bash
 bash scripts/test-nested.sh
@@ -150,7 +149,7 @@ perfect test of native hybrid-GPU startup. Use Alt+F4 to close that window.
 
 Then log out, choose **Tres** at your login screen, and sign in.
 If no login session selector is visible, check your display manager's UI.
-The default COSMIC option remains available.
+Your other installed desktop sessions remain available.
 
 ## Upgrading an existing Tres-Labwc installation
 
@@ -196,7 +195,7 @@ The built-in screen can be attached to AMD even when an NVIDIA GPU is also
 present. When the Labwc login is black but nested Labwc works, inspect the
 compositor log and try selecting the AMD DRM card **for Tres only**.
 
-From the existing repository checkout in a working COSMIC login:
+From the existing repository checkout in a working desktop login:
 
 ```bash
 git pull --ff-only
@@ -211,7 +210,7 @@ per-user preference. **This PCI address is specific to the original test
 laptop; do not use the AMD helper blindly on other computers.**
 
 Now save your work, log out and try **Tres** again. If the screen
-goes black, reboot into COSMIC and collect:
+goes black, return to another working desktop and collect:
 
 ```bash
 bash scripts/diagnose-standalone.sh
@@ -229,7 +228,7 @@ To **undo** the Tres-only GPU choice:
 bash scripts/clear-gpu-override.sh
 ```
 
-This does not modify GPU drivers, system-wide configurations, or COSMIC.
+This does not modify GPU drivers, system-wide configurations, or other desktops.
 The AMD selection is an investigation, not proof of the cause; a failed
 attempt should be followed by review of the debug log.
 
@@ -237,7 +236,7 @@ attempt should be followed by review of the debug log.
 
 If all windows and the three squares appear too small in standalone Tres,
 you need **Labwc output scaling**, not a different resolution. Run these
-commands **inside Tres**, not inside COSMIC:
+commands **inside Tres**, not another desktop session:
 
 ```bash
 sudo apt install wlr-randr
@@ -258,7 +257,7 @@ bash scripts/set-scale.sh eDP-1 1.5
 ```
 
 The helper first applies the scale, then adds a clearly marked block to
-`~/.config/tres/labwc/autostart`. It does not change COSMIC's
+`~/.config/tres/labwc/autostart`. It does not change another session's
 scaling. To change it again, rerun with a different factor. Use `1.25`,
 `1.5`, `1.75`, or `2` according to your display. If you have multiple
 monitors, this simple helper currently remembers only one chosen output.
@@ -288,7 +287,7 @@ the panel itself.
 
 If a graphical login is unusable, switch to a text TTY (often Ctrl+Alt+F3),
 log in, and run `bash uninstall.sh` from your repository checkout, then reboot
-or return to the login screen. **Do not uninstall COSMIC** for this experiment.
+or return to the login screen. **Keep another working desktop installed** for recovery.
 
 ## Uninstall
 
@@ -297,7 +296,7 @@ bash uninstall.sh
 ```
 
 This removes the Tres login entry and installed panel. Your custom Tres
-configuration and apt dependencies are left in place; **COSMIC is unchanged**.
+configuration and apt dependencies are left in place; **other desktops are unchanged**.
 
 ## Restart and shut down
 
@@ -328,7 +327,7 @@ and back into Tres to reload the panel.
 
 ## Known limitations
 
-- Verified on the original Pop!_OS hybrid laptop, but **not yet tested across
+- Verified on a hybrid-graphics Linux laptop, but **not yet tested across
   a broad range of Linux distributions, display managers, and GPU models**.
 - Applet menu is launchers and basic controls, not a full replacement for a
   desktop's network, Bluetooth, tray, notification, session/power, or battery
