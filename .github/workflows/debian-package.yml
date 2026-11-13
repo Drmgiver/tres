@@ -76,6 +76,8 @@ jobs:
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_panel_control.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_menu.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres-portals.conf"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-synaptic"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/lib/tres/tres-synaptic.sh"
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-panel-supervisor"
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-panel-control"
           test -x "$RUNNER_TEMP/tres-package-check/usr/lib/tres/tres-panel-supervisor.sh"
