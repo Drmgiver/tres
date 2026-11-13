@@ -217,8 +217,8 @@ class UpgradeTests(TestCase):
             # terminal if the installer accidentally invoked it.
             terminal = bin_dir / "tres-open-terminal"
             terminal.write_text(
-                "#!/bin/sh\\n# Tres-managed launcher\\n"
-                + "touch " + str(launched) + "\\n",
+                "#!/bin/sh\n# Tres-managed launcher\n"
+                + "touch " + str(launched) + "\n",
                 encoding="utf-8",
             )
             terminal.chmod(0o755)
@@ -240,7 +240,7 @@ class UpgradeTests(TestCase):
             bin_dir = home / ".local/bin"
             bin_dir.mkdir(parents=True)
             terminal = bin_dir / "tres-open-terminal"
-            terminal.write_text("#!/bin/sh\\necho customized\\n", encoding="utf-8")
+            terminal.write_text("#!/bin/sh\necho customized\n", encoding="utf-8")
             terminal.chmod(0o755)
             env = {**os.environ, "HOME": td}
             result = subprocess.run(
@@ -249,7 +249,7 @@ class UpgradeTests(TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(terminal.read_text(encoding="utf-8"),
-                             "#!/bin/sh\\necho customized\\n")
+                             "#!/bin/sh\necho customized\n")
 
     def test_shell_updater_keeps_existing_scale_and_custom_configuration(self):
         with TemporaryDirectory() as td:
