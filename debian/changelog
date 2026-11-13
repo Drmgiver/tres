@@ -1,3 +1,11 @@
+tres (0.5.3-1) unstable; urgency=medium
+
+  * Repair the local settings installer so it never launches a terminal.
+  * Keep launchers idempotent and preserve custom files and Wayland scaling.
+  * Add regression tests for no unintended process launch.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Fri, 13 Nov 2026 12:30:00 -0600
+
 tres (0.5.2-1) unstable; urgency=medium
 
   * Discover Wayland displays using the standard wlr-randr text output,
