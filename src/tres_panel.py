@@ -235,6 +235,15 @@ class Tres:
     @staticmethod
     def launch_app(app):
         try:
+            # Synaptic needs a short-lived XWayland authorization for root.
+            # Other desktop applications continue through their native launcher.
+            desktop_id = (app.get_id() or "").casefold()
+            if desktop_id in ("synaptic.desktop", "synaptic-pkexec.desktop"):
+                if spawn_first(
+                    (str(Path.home() / ".local/bin/tres-synaptic"),),
+                    ("/usr/bin/tres-synaptic",),
+                ):
+                    return
             app.launch([], None)
         except Exception as error:
             print(f"Tres: could not launch {app.get_name()}: {error}", file=sys.stderr)
