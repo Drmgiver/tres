@@ -1,0 +1,7 @@
+#!/bin/sh
+# User-specific Labwc autostart for the package-managed Tres session.
+mkdir -p "$HOME/.cache/tres-labwc"
+if command -v swaybg >/dev/null 2>&1; then
+    swaybg -c '#141414' >/dev/null 2>&1 &
+fi
+/usr/bin/tres-panel >> "$HOME/.cache/tres-labwc/panel.log" 2>&1 &
