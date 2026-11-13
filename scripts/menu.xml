@@ -2,9 +2,7 @@
 <openbox_menu>
   <menu id="root-menu" label="">
     <item label="Reconfigure Tres">
-      <action name="Execute">
-        <command>sh -c 'exec "$HOME/.local/bin/tres-config"'</command>
-      </action>
+      <action name="Execute" command="~/.local/bin/tres-config" />
     </item>
     <separator />
     <item label="Reconfigure">
