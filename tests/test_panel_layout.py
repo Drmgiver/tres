@@ -54,11 +54,16 @@ class TestPanelLayout(unittest.TestCase):
         self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "top")])
         self.assertEqual(panel._layout_mode, "over")
 
-    def test_reserved_uses_automatic_height(self):
+    def test_reserved_uses_independent_edge_surface(self):
         panel, shell = self.load_layout_method()
         panel._apply_mode("reserved")
-        self.assertEqual(shell.calls, [("layer", "top"), ("auto-exclusive",)])
+        # The visible corner-anchored surface cannot safely claim an
+        # exclusive zone. The separate edge-anchored reserver does that.
+        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "top")])
         self.assertEqual(panel._layout_mode, "reserved")
+        source = SOURCE.read_text(encoding="utf-8")
+        self.assertIn("def _reserve_work_area(", source)
+        self.assertIn("GtkLayerShell.set_exclusive_zone(reserver, depth)", source)
 
     def test_reserved_can_be_undone_without_restart(self):
         panel, shell = self.load_layout_method()
