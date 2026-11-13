@@ -26,7 +26,7 @@ fi
 
 printf '%s\n' 'Installing Labwc, GTK3 layer-shell, wlrctl, a terminal, and wallpaper helper.'
 sudo apt-get update
-sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp
+sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr
 
 # Copy the previous Tres configuration, if any, without deleting the old one.
 if [[ -d "$HOME/.config/tres-labwc" && ! -e "$HOME/.config/tres" ]]; then
@@ -40,7 +40,11 @@ install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
 install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
+for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper; do
+    install -m 0644 "$ROOT/src/$module.py" "$DEST/$module.py"
+done
 bash "$ROOT/scripts/install-screenshot.sh"
+bash "$ROOT/scripts/install-settings.sh"
 cat > "$BIN/tres-panel" <<'EOF'
 #!/bin/sh
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_panel.py" "$@"
