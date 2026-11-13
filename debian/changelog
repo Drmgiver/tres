@@ -1,3 +1,11 @@
+tres (0.5.1-1) unstable; urgency=medium
+
+  * Remove unrelated desktop and distribution branding throughout Tres.
+  * Select supported file managers by executable rather than by origin.
+  * Keep native appearance, display, keyboard, and application preferences.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Fri, 13 Nov 2026 12:00:00 -0600
+
 tres (0.5.0-1) unstable; urgency=medium
 
   * Expand Reconfigure Tres into native Appearance, Display, Keyboard
