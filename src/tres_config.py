@@ -294,8 +294,15 @@ def main() -> None:
                 if not app_id or app_id == initial[mime]:
                     continue
                 try:
-                    if not handlers[mime][app_id].set_as_default_for_type(mime):
-                        raise RuntimeError("The XDG service refused the change.")
+                    # A web browser default needs both schemes and HTML,
+                    # not just HTTPS links.
+                    types = ((mime, "x-scheme-handler/http", "text/html")
+                             if mime == "x-scheme-handler/https" else (mime,))
+                    for content_type in types:
+                        if not handlers[mime][app_id].set_as_default_for_type(content_type):
+                            raise RuntimeError(
+                                f"XDG refused the default for {content_type}."
+                            )
                     changed.append(caption)
                     initial[mime] = app_id
                 except (GLib.Error, ValueError, RuntimeError) as error:
