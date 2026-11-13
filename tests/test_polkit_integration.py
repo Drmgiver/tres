@@ -29,13 +29,18 @@ class PolkitTests(unittest.TestCase):
             self.assertEqual(content.count('"$HOME/.local/bin/tres-polkit-agent"'), 1)
             self.assertTrue((home / ".local/bin/tres-polkit-agent").exists())
 
-    def test_other_desktop_skips_agent(self):
+    def test_labwc_identity_starts_agent(self):
         with tempfile.TemporaryDirectory() as tmp:
-            env = dict(os.environ, XDG_CURRENT_DESKTOP="GNOME", PATH="/usr/bin:/bin")
+            bindir = Path(tmp)
+            agent = bindir / "lxpolkit"
+            agent.write_text("#!/bin/sh\\nprintf 'agent started\\\\n'\\n")
+            agent.chmod(0o755)
+            env = dict(os.environ, XDG_CURRENT_DESKTOP="labwc",
+                       PATH=str(bindir) + ":/usr/bin:/bin")
             result = subprocess.run(["sh", str(ROOT / "scripts/tres-polkit-agent.sh")],
                                     env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0)
-            self.assertEqual(result.stderr, "")
+            self.assertIn("agent started", result.stdout)
 
     def test_source_and_package_autostart(self):
         source = (ROOT / "scripts/autostart").read_text()
