@@ -1,4 +1,4 @@
-# Tres for Linux (Labwc)
+# Tres
 
 A **three-square, ultra-minimal Wayland desktop**, inspired by the old LiteStep
 **Tres** theme. This is an original recreation, not original LiteStep theme code.
@@ -31,8 +31,8 @@ try the dedicated login session. Keep COSMIC installed as your fallback.
 
 ## Debian package (experimental)
 
-An installable `.deb` and an unsigned Debian source package are built by the
-[Debian package workflow](https://github.com/Drmgiver/tres-labwc/actions/workflows/debian-package.yml).
+An installable `.deb` and unsigned Debian source package are built by the
+[Debian package workflow](.github/workflows/debian-package.yml).
 
 See [the packaging guide](packaging/README.md) before installing. In
 particular, **existing users of the GitHub shell installer need to migrate
@@ -44,19 +44,20 @@ This is not yet a package in Ubuntu's official archive.
 Clone this repository and run the installer from inside it:
 
 ```bash
-git clone https://github.com/Drmgiver/tres-labwc.git
-cd tres-labwc
+# Until GitHub's repository rename is completed, use its current URL:
+git clone https://github.com/Drmgiver/tres-labwc.git Tres
+cd Tres
 bash install.sh
 ```
 
 The installer:
 - Installs `labwc`, `python3-gi`, GTK3's introspection bindings,
   `gir1.2-gtklayershell-0.1`, `wlrctl`, `foot`, and `swaybg` through apt.
-- Installs Tres files into `~/.local/share/tres-labwc/` and launcher
+- Installs Tres files into `~/.local/share/tres/` and launcher
   `~/.local/bin/tres-panel`.
-- Creates a **private** `~/.config/tres-labwc/labwc/` configuration (without
+- Creates a **private** `~/.config/tres/labwc/` configuration (without
   editing `~/.config/labwc/` or COSMIC settings).
-- Adds **Tres (Labwc)** to your login manager's session list with a small
+- Adds **Tres** to your login manager's session list with a small
   system-wide wrapper and `.desktop` file, requiring `sudo`.
 
 **Test it nested** *inside COSMIC* before logging into it:
@@ -68,9 +69,30 @@ bash scripts/test-nested.sh
 A nested Wayland compositor should appear in its own window. It is *not* a
 perfect test of native hybrid-GPU startup. Use Alt+F4 to close that window.
 
-Then log out, choose **Tres (Labwc)** at your login screen, and sign in.
+Then log out, choose **Tres** at your login screen, and sign in.
 If no login session selector is visible, check your display manager's UI.
 The default COSMIC option remains available.
+
+## Upgrading an existing Tres-Labwc installation
+
+If you previously installed Tres from the old `tres-labwc` repository,
+**keep your working desktop available** during the rename. Pull or clone
+this repository, then **before** installing the renamed standalone session:
+
+```bash
+bash scripts/migrate-legacy.sh
+bash install.sh
+```
+
+The migration script **copies** `~/.config/tres-labwc/` to
+`~/.config/tres/` when the new destination is absent. It keeps your
+HiDPI scaling and any GPU preference. It never deletes or overwrites the
+original settings. The former login entry may remain available until you
+explicitly clean up the old shell installation.
+
+Users of the old experimental `tres-labwc` .deb should instead follow the
+[package migration guide](packaging/README.md), which describes replacement
+by the new `tres` package.
 
 ## Updating from GitHub
 
@@ -109,7 +131,7 @@ known PCI device `0000:65:00.0` is using `amdgpu` before storing a
 per-user preference. **This PCI address is specific to the original test
 laptop; do not use the AMD helper blindly on other computers.**
 
-Now save your work, log out and try **Tres (Labwc)** again. If the screen
+Now save your work, log out and try **Tres** again. If the screen
 goes black, reboot into COSMIC and collect:
 
 ```bash
@@ -117,7 +139,7 @@ bash scripts/diagnose-standalone.sh
 ```
 
 The launcher keeps Labwc's `-d` debug output in
-`~/.cache/tres-labwc/labwc-standalone.log`, including across a failed login.
+`~/.cache/tres/labwc-standalone.log`, including across a failed login.
 The diagnostic prioritizes that log and connected DRM outputs instead of
 filling the report with unrelated NVIDIA X11 mode lines. Review log
 contents for private identifiers before sharing.
@@ -157,7 +179,7 @@ bash scripts/set-scale.sh eDP-1 1.5
 ```
 
 The helper first applies the scale, then adds a clearly marked block to
-`~/.config/tres-labwc/labwc/autostart`. It does not change COSMIC's
+`~/.config/tres/labwc/autostart`. It does not change COSMIC's
 scaling. To change it again, rerun with a different factor. Use `1.25`,
 `1.5`, `1.75`, or `2` according to your display. If you have multiple
 monitors, this simple helper currently remembers only one chosen output.
@@ -177,7 +199,7 @@ To diagnose missing menus or applets:
 
 ```bash
 bash scripts/diagnose.sh
-cat ~/.cache/tres-labwc/panel.log
+cat ~/.cache/tres/panel.log
 ```
 
 If the panel log mentions `Gdk` version `4.0` already loaded, pull the latest
@@ -227,8 +249,8 @@ and back into Tres to reload the panel.
 
 ## Known limitations
 
-- Prototype, **not verified yet on the target laptop**. Shell/Python tests are
-  included, but a real graphical/hybrid GPU test is necessary.
+- Verified on the original Pop!_OS hybrid laptop, but **not yet tested across
+  a broad range of Linux distributions, display managers, and GPU models**.
 - Applet menu is launchers and basic controls, not a full replacement for a
   desktop's network, Bluetooth, tray, notification, session/power, or battery
   management services. Depending on the machine you may need to add a
