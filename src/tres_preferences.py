@@ -14,7 +14,7 @@ DEFAULT_APPEARANCE = {
     "wallpaper_color": "#141414",
 }
 TERMINALS = ("foot", "terminator", "alacritty", "kitty", "gnome-terminal",
-             "xfce4-terminal", "xterm", "cosmic-term")
+             "xfce4-terminal", "xterm")
 _COLOR = re.compile(r"#[0-9a-fA-F]{6}\Z")
 
 
