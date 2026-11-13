@@ -177,6 +177,11 @@ class PackageAndSessionTests(TestCase):
         for content in (installer, updater, session, remover):
             self.assertIn("Tres-managed session launcher", content)
         self.assertIn("tres:labwc:wlroots", session)
+        # Guard against accidental duplicate installer bodies or malformed
+        # ownership checks when changing release scripts.
+        self.assertEqual(installer.count("sudo apt-get update"), 1)
+        self.assertEqual(installer.count("sudo install -m 0755"), 1)
+        self.assertIn("grep -qx 'X-Tres=true'", installer)
 
     def test_tres_portals_are_desktop_scoped(self):
         config = (ROOT / "scripts/tres-portals.conf").read_text()
