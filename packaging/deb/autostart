@@ -6,3 +6,6 @@ if command -v dbus-update-activation-environment >/dev/null 2>&1; then
 fi
 /usr/bin/tres-wallpaper >/dev/null 2>&1 &
 /usr/bin/tres-panel-supervisor >/dev/null 2>&1 &
+
+# Graphical privilege prompts for Tres only.
+/bin/sh /usr/lib/tres/tres-polkit-agent.sh >> "$HOME/.cache/tres/polkit.log" 2>&1 &
