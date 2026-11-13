@@ -31,6 +31,7 @@ from tres_layout import read_mode  # noqa: E402
 from tres_preferences import read_appearance  # noqa: E402
 from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
 from tres_audio import audio_backend, change_volume, AudioError  # noqa: E402
+from tres_applications import visible_applications, launch_application  # noqa: E402
 
 def panel_style(appearance: dict) -> bytes:
     """Safe CSS: colors and size are strictly validated by tres_preferences."""
@@ -196,14 +197,13 @@ class Tres:
 
     def applications_menu(self):
         menu = Gtk.Menu()
+        menu.append(self.item("Search Applications…", lambda: spawn_first(
+            (str(Path.home() / ".local/bin/tres-search"),),
+            ("/usr/bin/tres-search",))))
+        menu.append(self.separator())
         found = {}
-        for app in Gio.AppInfo.get_all():
-            try:
-                if not app.should_show() or not app.get_name():
-                    continue
-                found.setdefault(category(app), []).append(app)
-            except Exception:
-                continue
+        for app in visible_applications(Gio):
+            found.setdefault(category(app), []).append(app)
         for group in sorted(found):
             apps = sorted(found[group], key=lambda x: x.get_name().casefold())
             menu.append(self.submenu(group, self._application_rows(apps)))
@@ -234,19 +234,7 @@ class Tres:
 
     @staticmethod
     def launch_app(app):
-        try:
-            # Synaptic needs a short-lived XWayland authorization for root.
-            # Other desktop applications continue through their native launcher.
-            desktop_id = (app.get_id() or "").casefold()
-            if desktop_id in ("synaptic.desktop", "synaptic-pkexec.desktop"):
-                if spawn_first(
-                    (str(Path.home() / ".local/bin/tres-synaptic"),),
-                    ("/usr/bin/tres-synaptic",),
-                ):
-                    return
-            app.launch([], None)
-        except Exception as error:
-            print(f"Tres: could not launch {app.get_name()}: {error}", file=sys.stderr)
+        return launch_application(app)
 
     def windows_menu(self):
         menu = Gtk.Menu()
