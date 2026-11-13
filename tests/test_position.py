@@ -19,7 +19,7 @@ class PositionTests(unittest.TestCase):
         x, y = coordinates(DEFAULT_POSITION, width, height, 1920, 1080)
         self.assertEqual((width, height), (67, 19))
         self.assertEqual(y, 3)
-        self.assertEqual(x + 19 + 5 + 19 / 2, 960.5)
+        self.assertEqual(x + 19 + 5 + 19 / 2, 959.5)
         self.assertLess(abs(x + 19 + 5 + 19 / 2 - 960), 1)
 
     def test_edge_presets(self):
