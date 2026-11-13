@@ -2,7 +2,8 @@
 # Install the new search shortcut once, preserving existing keybindings.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-/usr/bin/python3 - "$ROOT/src" "$HOME/.config/tres/labwc/rc.xml" "$HOME/.config/tres/search-shortcut-initialized" <<'PY'
+MODULE_DIR="${TRES_MODULE_DIR:-$ROOT/src}"
+/usr/bin/python3 - "$MODULE_DIR" "$HOME/.config/tres/labwc/rc.xml" "$HOME/.config/tres/search-shortcut-initialized" <<'PY'
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
