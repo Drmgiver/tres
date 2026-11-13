@@ -52,4 +52,4 @@ else
     echo "Keeping existing $CFG/menu.xml (add Reconfigure Tres manually if customized)"
 fi
 echo "Tres panel updated. Close any running nested Labwc window,"
-echo "then log out and back into Tres to load the new panel (no COSMIC changes)."
+echo "then log out and back into Tres to load the new panel (other desktops unchanged)."
