@@ -33,7 +33,7 @@ class PolkitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             bindir = Path(tmp)
             agent = bindir / "lxpolkit"
-            agent.write_text("#!/bin/sh\\nprintf 'agent started\\\\n'\\n")
+            agent.write_text("#!/bin/sh\nprintf 'agent started\\n'\n")
             agent.chmod(0o755)
             env = dict(os.environ, XDG_CURRENT_DESKTOP="labwc",
                        PATH=str(bindir) + ":/usr/bin:/bin")
