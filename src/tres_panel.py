@@ -273,8 +273,8 @@ class Tres:
             audio.append(self.item("Sound settings", lambda: spawn_first(("pavucontrol",))))
         menu.append(self.submenu("Audio", audio))
 
-        # Tres runs as its own Labwc session. COSMIC Settings requires COSMIC
-        # services and must not be offered as a Tres system-settings shortcut.
+        # Tres runs as its own Labwc session. Do not launch settings panels
+        # requiring services provided by a different desktop environment.
         # Use the same Tres dialog as the desktop right-click menu instead.
         menu.append(self.item("Reconfigure Tres…", lambda: spawn_first(
             (str(Path.home() / ".local/bin/tres-config"),),
