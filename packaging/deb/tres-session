@@ -7,6 +7,11 @@ if [ ! -e "${XDG_CONFIG_HOME:-$HOME/.config}/tres" ] && [ -d "$legacy" ]; then
     /usr/bin/env bash /usr/share/tres/migrate-legacy.sh
 fi
 mkdir -p "$config"
+portal_config="${XDG_CONFIG_HOME:-$HOME/.config}/xdg-desktop-portal/tres-portals.conf"
+if [ ! -e "$portal_config" ]; then
+    mkdir -p "$(dirname "$portal_config")"
+    cp /usr/share/tres/tres-portals.conf "$portal_config"
+fi
 if [ ! -e "$config/autostart" ]; then
     cp /usr/share/tres/autostart "$config/autostart"
     chmod 0755 "$config/autostart"
