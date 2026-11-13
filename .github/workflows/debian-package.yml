@@ -68,8 +68,10 @@ jobs:
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_shortcuts.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_open.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_wallpaper.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_terminal.py"
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-open-files"
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-wallpaper"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-open-terminal"
 
       - name: Run lintian review (report findings, do not mask build errors)
         run: |
