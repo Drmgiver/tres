@@ -30,6 +30,7 @@ from tres_core import activate, request_power_action, submenu_pages, windows  # 
 from tres_layout import read_mode  # noqa: E402
 from tres_preferences import read_appearance  # noqa: E402
 from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
+from tres_audio import audio_backend, change_volume, AudioError  # noqa: E402
 
 def panel_style(appearance: dict) -> bytes:
     """Safe CSS: colors and size are strictly validated by tres_preferences."""
@@ -266,9 +267,12 @@ class Tres:
         menu.append(self.item(battery_label()))
         menu.append(self.separator())
 
-        audio = [self.item("Volume +5%", lambda: self.audio("+5%")),
-                 self.item("Volume -5%", lambda: self.audio("-5%")),
-                 self.item("Mute/unmute", lambda: self.audio("toggle", mute=True))]
+        if audio_backend() is not None:
+            audio = [self.item("Volume +5%", lambda: self.audio("up")),
+                     self.item("Volume -5%", lambda: self.audio("down")),
+                     self.item("Mute/unmute", lambda: self.audio("mute"))]
+        else:
+            audio = [self.item("Audio controls unavailable")]
         if shutil.which("pavucontrol"):
             audio.append(self.item("Sound settings", lambda: spawn_first(("pavucontrol",))))
         menu.append(self.submenu("Audio", audio))
@@ -305,15 +309,19 @@ class Tres:
         except RuntimeError as error:
             print(f"Tres: terminal could not launch: {error}", file=sys.stderr)
 
-    @staticmethod
-    def audio(level: str, mute: bool = False) -> None:
-        if not shutil.which("pactl"):
-            print("Tres: pactl not installed", file=sys.stderr)
-            return
-        args = ["pactl", "set-sink-mute" if mute else "set-sink-volume",
-                "@DEFAULT_SINK@", level]
-        subprocess.Popen(args, start_new_session=True,
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    def audio(self, direction: str) -> None:
+        try:
+            change_volume(direction)
+        except (AudioError, OSError) as error:
+            problem = Gtk.MessageDialog(
+                transient_for=self.window, flags=Gtk.DialogFlags.MODAL,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.CLOSE,
+                text="Tres could not change the volume",
+            )
+            problem.format_secondary_text(str(error)[:500])
+            problem.run()
+            problem.destroy()
 
     def confirm_power(self, action: str) -> None:
         # Confirmation is deliberately separate for restart and poweroff.
