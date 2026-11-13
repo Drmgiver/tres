@@ -16,4 +16,13 @@ if [ ! -e "$config/menu.xml" ]; then
     cp /usr/share/tres/menu.xml "$config/menu.xml"
     chmod 0644 "$config/menu.xml"
 fi
+# Upgrade only the original default wallpaper invocation, preserving other
+# autostart edits (especially an existing HiDPI scale block). Leave custom
+# wallpaper commands untouched.
+if [ -f "$config/autostart" ] &&
+   grep -Fq "swaybg -c '#141414'" "$config/autostart" &&
+   ! grep -Fq 'tres-wallpaper' "$config/autostart"; then
+    cp -p "$config/autostart" "$config/autostart.before-tres-wallpaper"
+    sed -i "s|swaybg -c '#141414'|/usr/bin/tres-wallpaper|g" "$config/autostart"
+fi
 exec /usr/lib/tres/tres-session.sh "$@"
