@@ -29,7 +29,7 @@ except (ImportError, ValueError) as error:
 from tres_core import activate, request_power_action, submenu_pages, windows  # noqa: E402
 from tres_layout import read_mode  # noqa: E402
 from tres_position import (read_position, save_position, coordinates, with_coordinates,
-                           panel_size)  # noqa: E402
+                           panel_size, reservation_depth)  # noqa: E402
 from tres_preferences import read_appearance  # noqa: E402
 from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
 from tres_audio import audio_backend, change_volume, volume_label, AudioError  # noqa: E402
@@ -122,8 +122,16 @@ class Tres:
         self._drag = None
         self._suppress_click = False
         self._layout_mode = None
+        self._reservation_window = None
+        self._reservation_config = None
         self._apply_mode(read_mode())
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        box = Gtk.Box(
+            orientation=(Gtk.Orientation.VERTICAL
+                         if self._position["edge"] in ("left", "right")
+                         else Gtk.Orientation.HORIZONTAL),
+            spacing=5,
+        )
+        self._box = box
         self.square_buttons = []
         for tooltip, builder in (("Applications", self.applications_menu),
                                  ("Running windows", self.windows_menu),
@@ -162,20 +170,102 @@ class Tres:
         return geometry.width, geometry.height
 
     def _panel_dimensions(self):
-        width, height = panel_size(self._appearance["square_size"])
-        # GTK's actual allocated size takes precedence over the CSS minimum.
-        allocated_width = self.window.get_allocated_width()
-        allocated_height = self.window.get_allocated_height()
-        return (max(width, allocated_width), max(height, allocated_height))
+        # Get the box's preferred size instead of an old window allocation:
+        # after changing from horizontal to vertical, the old allocation
+        # remains wide for a short time and would throw off all four edges.
+        width, height = panel_size(self._appearance["square_size"],
+                                   self._position["edge"])
+        minimum, natural = self._box.get_preferred_size()
+        return max(width, natural.width), max(height, natural.height)
+
+    def _set_orientation(self, edge):
+        orientation = (Gtk.Orientation.VERTICAL if edge in ("left", "right")
+                       else Gtk.Orientation.HORIZONTAL)
+        if self._box.get_orientation() != orientation:
+            self._box.set_orientation(orientation)
+            self._box.queue_resize()
+
+    def _reserve_work_area(self, position, x, y, width, height, monitor):
+        # The panel is a freely positioned TOP-layer window. Reserving space
+        # from this same corner-anchored surface is invalid in layer-shell:
+        # a positive exclusive zone requires a well-defined single edge.
+        # Use an invisible dedicated edge-anchored surface for work-area
+        # reservation, while keeping the actual three squares movable.
+        if self._layout_mode != "reserved":
+            if self._reservation_window is not None:
+                self._reservation_window.destroy()
+                self._reservation_window = None
+                self._reservation_config = None
+            return
+
+        edge = position["edge"]
+        depth = reservation_depth(edge, x, y, width, height, *monitor)
+        config = (edge, depth)
+        if config == self._reservation_config:
+            return
+        if self._reservation_window is None:
+            reserver = Gtk.Window()
+            reserver.set_decorated(False)
+            reserver.set_resizable(False)
+            reserver.set_app_paintable(True)
+            reserver.set_opacity(0)
+            reserver.set_size_request(1, 1)
+            GtkLayerShell.init_for_window(reserver)
+            GtkLayerShell.set_layer(reserver, GtkLayerShell.Layer.TOP)
+            GtkLayerShell.set_keyboard_mode(
+                reserver, GtkLayerShell.KeyboardMode.NONE)
+            self._reservation_window = reserver
+        reserver = self._reservation_window
+        anchors = {
+            "top": (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.LEFT,
+                    GtkLayerShell.Edge.RIGHT),
+            "bottom": (GtkLayerShell.Edge.BOTTOM, GtkLayerShell.Edge.LEFT,
+                       GtkLayerShell.Edge.RIGHT),
+            "left": (GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.TOP,
+                     GtkLayerShell.Edge.BOTTOM),
+            "right": (GtkLayerShell.Edge.RIGHT, GtkLayerShell.Edge.TOP,
+                      GtkLayerShell.Edge.BOTTOM),
+        }
+        for anchor in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                       GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+            GtkLayerShell.set_anchor(reserver, anchor, anchor in anchors[edge])
+            GtkLayerShell.set_margin(reserver, anchor, 0)
+        GtkLayerShell.set_exclusive_zone(reserver, depth)
+        reserver.show_all()
+        self._reservation_config = config
 
     def _apply_position(self, position):
         monitor = self._monitor_dimensions()
         if monitor is None:
             return
+        self._set_orientation(position["edge"])
         width, height = self._panel_dimensions()
         x, y = coordinates(position, width, height, *monitor)
-        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.LEFT, x)
-        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.TOP, y)
+
+        # Match the physical edge. Bottom is anchored to BOTTOM, right to
+        # RIGHT: neither relies on a top-left margin spanning the monitor.
+        edge = position["edge"]
+        anchors = {
+            "top": (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.LEFT),
+            "bottom": (GtkLayerShell.Edge.BOTTOM, GtkLayerShell.Edge.LEFT),
+            "left": (GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.TOP),
+            "right": (GtkLayerShell.Edge.RIGHT, GtkLayerShell.Edge.TOP),
+        }
+        margins = {
+            GtkLayerShell.Edge.LEFT: x,
+            GtkLayerShell.Edge.RIGHT: monitor[0] - x - width,
+            GtkLayerShell.Edge.TOP: y,
+            GtkLayerShell.Edge.BOTTOM: monitor[1] - y - height,
+        }
+        for anchor in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                       GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+            enabled = anchor in anchors[edge]
+            if GtkLayerShell.get_anchor(self.window, anchor) != enabled:
+                GtkLayerShell.set_anchor(self.window, anchor, enabled)
+            desired = margins[anchor] if enabled else 0
+            if GtkLayerShell.get_margin(self.window, anchor) != desired:
+                GtkLayerShell.set_margin(self.window, anchor, desired)
+        self._reserve_work_area(position, x, y, width, height, monitor)
 
     def _on_size_allocate(self, _window, _allocation):
         if self._drag is None:
@@ -227,21 +317,19 @@ class Tres:
         return True
 
     def _apply_mode(self, mode: str) -> None:
-        if mode == "under":
-            # Above the wallpaper but beneath normal and maximized windows.
-            GtkLayerShell.set_exclusive_zone(self.window, 0)
-            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.BOTTOM)
-        elif mode == "over":
-            # Always visible over normal/maximized windows, no lost screen space.
-            GtkLayerShell.set_exclusive_zone(self.window, 0)
-            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.TOP)
-        elif mode == "reserved":
-            # The compositor allocates a strip equal to the squares plus margin.
-            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.TOP)
-            GtkLayerShell.auto_exclusive_zone_enable(self.window)
-        else:
+        if mode not in ("under", "over", "reserved"):
             raise ValueError(f"Unknown Tres stacking mode: {mode}")
+        # The visible, draggable squares never reserve space by themselves.
+        # A separate, properly edge-anchored surface manages the reservation.
+        GtkLayerShell.set_exclusive_zone(self.window, 0)
+        GtkLayerShell.set_layer(
+            self.window,
+            GtkLayerShell.Layer.BOTTOM if mode == "under"
+            else GtkLayerShell.Layer.TOP,
+        )
         self._layout_mode = mode
+        if hasattr(self, "_box"):
+            self._apply_position(self._position)
 
     def _check_settings(self) -> bool:
         mode = read_mode()
@@ -269,7 +357,15 @@ class Tres:
             return
         menu = builder()
         menu.show_all()
-        menu.popup_at_widget(button, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
+        if self._position["edge"] == "left":
+            from_gravity, to_gravity = Gdk.Gravity.EAST, Gdk.Gravity.WEST
+        elif self._position["edge"] == "right":
+            from_gravity, to_gravity = Gdk.Gravity.WEST, Gdk.Gravity.EAST
+        elif self._position["edge"] == "bottom":
+            from_gravity, to_gravity = Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH
+        else:
+            from_gravity, to_gravity = Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH
+        menu.popup_at_widget(button, from_gravity, to_gravity, None)
 
     @staticmethod
     def item(label: str, callback=None) -> object:
