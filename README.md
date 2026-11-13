@@ -134,6 +134,20 @@ otherwise. Unavailable controls are reported rather than silently ignored.
 The package recommends the desktop portal backends; audio clients can be
 installed independently if they are missing.
 
+## Graphical administrator authentication
+
+Tres starts the lightweight `lxpolkit` authentication agent in its own session,
+so applications such as Synaptic can display a password prompt when requesting
+administrator privileges. The source installer installs `lxpolkit` automatically.
+For an existing manual installation, update with `bash scripts/update-panel.sh`;
+if it reports a missing agent, run `sudo apt-get install lxpolkit` and log out
+and back into Tres. The Debian package depends on `lxpolkit`.
+
+The installer only adds a Tres-owned startup entry to existing configuration;
+it does not change other desktop sessions. If the agent fails, inspect
+`~/.cache/tres/polkit.log`. A successful authentication prompt does not guarantee
+Synaptic itself can run as root under every Wayland configuration.
+
 ## Panel recovery
 
 If the three squares disappear unexpectedly, the Tres panel supervisor
