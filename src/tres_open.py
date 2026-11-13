@@ -58,3 +58,29 @@ def open_home() -> None:
         "'sudo apt install thunar', and select it in Reconfigure Tres → "
         "Default applications. " + problem
     )
+
+
+def main() -> None:
+    try:
+        open_home()
+    except FileManagerError as error:
+        try:
+            import gi
+            gi.require_version("Gtk", "3.0")
+            from gi.repository import Gtk
+            dialog = Gtk.MessageDialog(
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.CLOSE,
+                text="Tres cannot open Files",
+            )
+            dialog.format_secondary_text(str(error)[:600])
+            dialog.run()
+            dialog.destroy()
+        except (ImportError, ValueError):
+            import sys
+            print(f"Tres Files: {error}", file=sys.stderr)
+        raise SystemExit(1) from error
+
+
+if __name__ == "__main__":
+    main()
