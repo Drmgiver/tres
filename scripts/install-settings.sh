@@ -29,6 +29,7 @@ EOF
 install_launcher tres-open-files tres_open
 install_launcher tres-wallpaper tres_wallpaper
 install_launcher tres-open-terminal tres_terminal
+install_launcher tres-search tres_search
 # Synaptic is an optional application; install the wrapper, not Synaptic itself.
 target="$BIN/tres-synaptic"
 if [[ ! -L "$target" ]] && { [[ ! -e "$target" ]] || grep -qx '# Tres-managed Synaptic launcher: temporary root access to this XWayland display.' "$target" 2>/dev/null; }; then
