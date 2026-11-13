@@ -44,7 +44,7 @@ tres (0.4.0-1) unstable; urgency=medium
 
   * Add Tres Screenshot GTK3 capture dialog to Accessories.
   * Capture the full screen or select an area using Grim and Slurp.
-  * Add user-local and packaged desktop launchers without removing Ubuntu tools.
+  * Add user-local and packaged launchers without removing existing utilities.
 
  -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Thu, 12 Nov 2026 23:20:00 -0600
 
