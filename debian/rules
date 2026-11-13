@@ -7,5 +7,9 @@ export PYTHONDONTWRITEBYTECODE=1
 override_dh_auto_test:
 	python3 -m unittest discover -s tests -v
 
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 debian/tres/usr/bin/tres-synaptic debian/tres/usr/lib/tres/tres-synaptic.sh
+
 override_dh_python3:
 	dh_python3 /usr/share/tres
