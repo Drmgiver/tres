@@ -29,6 +29,16 @@ It doesn't rely on X11/Openbox, and its window selector uses wlroots's native
 GPU/driver combination works with Labwc. Test the nested session first, then
 try the dedicated login session. Keep COSMIC installed as your fallback.
 
+## Debian package (experimental)
+
+An installable `.deb` and an unsigned Debian source package are built by the
+[Debian package workflow](https://github.com/Drmgiver/tres-labwc/actions/workflows/debian-package.yml).
+
+See [the packaging guide](packaging/README.md) before installing. In
+particular, **existing users of the GitHub shell installer need to migrate
+their autostart file** so the login session runs the package-managed panel.
+This is not yet a package in Ubuntu's official archive.
+
 ## Installation (Pop!_OS / Ubuntu, apt)
 
 Clone this repository and run the installer from inside it:
