@@ -1,3 +1,11 @@
+tres (0.3.0-1) unstable; urgency=medium
+
+  * Add Reconfigure Tres to Labwc's desktop right-click menu.
+  * Offer Under, Over, and Space reserved stacking choices.
+  * Persist stacking preference and apply changes without logging out.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Thu, 12 Nov 2026 22:45:00 -0600
+
 tres (0.2.0-1) unstable; urgency=medium
 
   * Rename desktop session and Debian package from tres-labwc to Tres.
