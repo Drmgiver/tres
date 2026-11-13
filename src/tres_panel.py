@@ -25,7 +25,7 @@ try:
 except (ImportError, ValueError) as error:
     sys.exit(f"GTK3 layer-shell not installed: {error}\nRun bash install.sh")
 
-from tres_core import activate, windows  # noqa: E402
+from tres_core import activate, request_power_action, windows  # noqa: E402
 
 STYLE = b"""
 window#tres-root { background-color: transparent; }
@@ -225,6 +225,8 @@ class Tres:
             ("gnome-terminal",), ("xterm",))))
         menu.append(self.separator())
         menu.append(self.item("Exit Tres session…", self.ask_exit))
+        menu.append(self.item("Restart computer…", lambda: self.confirm_power("restart")))
+        menu.append(self.item("Shut down computer…", lambda: self.confirm_power("shutdown")))
         return menu
 
     @staticmethod
@@ -236,6 +238,37 @@ class Tres:
                 "@DEFAULT_SINK@", level]
         subprocess.Popen(args, start_new_session=True,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def confirm_power(self, action: str) -> None:
+        # Confirmation is deliberately separate for restart and poweroff.
+        messages = {
+            "restart": "Restart this computer?",
+            "shutdown": "Shut down this computer?",
+        }
+        if action not in messages:
+            return
+        dialog = Gtk.MessageDialog(
+            transient_for=self.window, flags=Gtk.DialogFlags.MODAL,
+            message_type=Gtk.MessageType.QUESTION,
+            buttons=Gtk.ButtonsType.YES_NO, text=messages[action],
+        )
+        dialog.format_secondary_text("Save your work first. Unsaved changes may be lost.")
+        choice = dialog.run()
+        dialog.destroy()
+        if choice != Gtk.ResponseType.YES:
+            return
+        try:
+            request_power_action(action)
+        except RuntimeError as error:
+            problem = Gtk.MessageDialog(
+                transient_for=self.window, flags=Gtk.DialogFlags.MODAL,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.CLOSE,
+                text="Unable to " + ("restart" if action == "restart" else "shut down"),
+            )
+            problem.format_secondary_text(str(error)[:400])
+            problem.run()
+            problem.destroy()
 
     def ask_exit(self):
         dialog = Gtk.MessageDialog(transient_for=self.window, flags=Gtk.DialogFlags.MODAL,
