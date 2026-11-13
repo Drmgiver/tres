@@ -35,6 +35,7 @@ for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpa
 done
 bash "$ROOT/scripts/install-screenshot.sh"
 bash "$ROOT/scripts/install-settings.sh"
+bash "$ROOT/scripts/install-portals.sh"
 mkdir -p "$BIN" "$CFG"
 cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
