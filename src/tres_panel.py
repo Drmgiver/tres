@@ -30,7 +30,7 @@ from tres_core import activate, request_power_action, submenu_pages, windows  # 
 from tres_layout import read_mode  # noqa: E402
 from tres_preferences import read_appearance  # noqa: E402
 from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
-from tres_audio import audio_backend, change_volume, AudioError  # noqa: E402
+from tres_audio import audio_backend, change_volume, volume_label, AudioError  # noqa: E402
 from tres_applications import visible_applications, launch_application  # noqa: E402
 
 def panel_style(appearance: dict) -> bytes:
@@ -262,6 +262,7 @@ class Tres:
         menu = Gtk.Menu()
         menu.append(self.item(datetime.now().strftime("%a %b %d, %Y  %-I:%M %p")))
         menu.append(self.item(battery_label()))
+        menu.append(self.item(volume_label()))
         menu.append(self.separator())
 
         if audio_backend() is not None:
