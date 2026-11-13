@@ -119,6 +119,36 @@ This does not modify GPU drivers, system-wide configurations, or COSMIC.
 The AMD selection is an investigation, not proof of the cause; a failed
 attempt should be followed by review of the debug log.
 
+## Display scaling (HiDPI laptops)
+
+If all windows and the three squares appear too small in standalone Tres,
+you need **Labwc output scaling**, not a different resolution. Run these
+commands **inside Tres**, not inside COSMIC:
+
+```bash
+sudo apt install wlr-randr
+wlr-randr
+```
+
+Find your built-in display's name (often `eDP-1`), then try 150%:
+
+```bash
+wlr-randr --output eDP-1 --scale 1.5
+```
+
+Replace `eDP-1` with the actual output name. Once you like the appearance,
+**persist it only in the Tres session** with:
+
+```bash
+bash scripts/set-scale.sh eDP-1 1.5
+```
+
+The helper first applies the scale, then adds a clearly marked block to
+`~/.config/tres-labwc/labwc/autostart`. It does not change COSMIC's
+scaling. To change it again, rerun with a different factor. Use `1.25`,
+`1.5`, `1.75`, or `2` according to your display. If you have multiple
+monitors, this simple helper currently remembers only one chosen output.
+
 ## Shortcuts & recovery
 
 Labwc default keyboard shortcuts remain available (we don't override `rc.xml`):
