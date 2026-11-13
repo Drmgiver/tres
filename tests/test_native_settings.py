@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from tres_preferences import (DEFAULT_APPEARANCE, read_appearance, save_appearance,
                               read_terminal, save_terminal)
-from tres_display import DisplayError, apply_scale, output_info
+from tres_display import DisplayError, apply_scale, output_info, parse_output_text
 from tres_shortcuts import DEFAULT_KEYS, read_shortcuts, save_shortcuts
 from tres_open import FILE_MANAGERS, FileManagerError, is_supported_file_manager, open_home
 
@@ -55,14 +55,65 @@ class PreferencesTests(TestCase):
 class DisplayTests(TestCase):
     @patch("tres_display.shutil.which", return_value="/usr/bin/wlr-randr")
     @patch("tres_display.subprocess.run")
-    def test_read_enabled_outputs(self, run, _which):
+    def test_read_enabled_outputs_on_older_wlr_randr(self, run, _which):
+        # Exact text shape from older wlr-randr builds without --json.
         run.return_value.returncode = 0
         run.return_value.stdout = (
-            '[{"name":"eDP-1","scale":1.5,"enabled":true},'
-            '{"name":"HDMI-A-1","scale":1,"enabled":false}]'
+            'eDP-1 "Built-in display (eDP-1)"\n'
+            '  Physical size: 286x179 mm\n'
+            '  Enabled: yes\n'
+            '  Modes:\n'
+            '    2560x1600 px, 60.000000 Hz (preferred, current)\n'
+            '  Position: 0,0\n'
+            '  Transform: normal\n'
+            '  Scale: 1.500000\n'
+            'HDMI-A-1 "External screen"\n'
+            '  Enabled: no\n'
+            '  Modes:\n'
+            '    1920x1080 px, 60.000000 Hz\n'
         )
         self.assertEqual(output_info(), [("eDP-1", 1.5)])
-        self.assertEqual(run.call_args.args[0], ["wlr-randr", "--json"])
+        run.assert_called_once_with(
+            ["wlr-randr"], capture_output=True, text=True, timeout=6,
+            check=False,
+        )
+
+    def test_parse_multiple_active_outputs_and_disabled_one(self):
+        text = (
+            'eDP-1 "Laptop panel"\n Enabled: yes\n Scale: 1.250000\n'
+            'HDMI-A-1 "Monitor"\n Enabled: yes\n Scale: 2.000000\n'
+            'DP-3 "Unplugged"\n Enabled: no\n'
+        )
+        self.assertEqual(
+            parse_output_text(text),
+            [("eDP-1", 1.25), ("HDMI-A-1", 2.0)],
+        )
+
+    def test_text_parser_handles_single_output_without_description(self):
+        self.assertEqual(
+            parse_output_text("eDP-1\n Enabled: yes\n Scale: 1.500000\n"),
+            [("eDP-1", 1.5)],
+        )
+
+    def test_text_parser_rejects_unparseable_scale(self):
+        with self.assertRaisesRegex(DisplayError, "Invalid scale"):
+            parse_output_text('eDP-1 "Panel"\n Enabled: yes\n Scale: unknown\n')
+
+    @patch("tres_display.shutil.which", return_value="/usr/bin/wlr-randr")
+    @patch("tres_display.subprocess.run")
+    def test_no_active_outputs_returns_clear_error(self, run, _which):
+        run.return_value.returncode = 0
+        run.return_value.stdout = 'DP-1 "Off"\n Enabled: no\n'
+        with self.assertRaisesRegex(DisplayError, "No enabled displays"):
+            output_info()
+
+    @patch("tres_display.shutil.which", return_value="/usr/bin/wlr-randr")
+    @patch("tres_display.subprocess.run")
+    def test_command_failure_is_reported(self, run, _which):
+        run.return_value.returncode = 1
+        run.return_value.stderr = "Cannot connect to Wayland compositor"
+        with self.assertRaisesRegex(DisplayError, "Cannot connect"):
+            output_info()
 
     @patch("tres_display.shutil.which", return_value="/usr/bin/wlr-randr")
     @patch("tres_display.subprocess.run")
