@@ -101,14 +101,12 @@ class Tres:
                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         GtkLayerShell.init_for_window(self.window)
-        GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.TOP)
+        # Bottom layer is above wallpaper, but below normal windows.
+        # A maximized window should cover all three squares naturally.
+        GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.BOTTOM)
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.TOP, True)
         GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.TOP, 3)
-        # Reserve only the panel's height plus the top margin. This tells
-        # Labwc to maximize normal windows below the three white squares,
-        # rather than placing their top edge underneath the controls.
-        # Auto-sizing keeps the reserved area correct with HiDPI scaling.
-        GtkLayerShell.auto_exclusive_zone_enable(self.window)
+        GtkLayerShell.set_exclusive_zone(self.window, 0)
         GtkLayerShell.set_keyboard_mode(self.window, GtkLayerShell.KeyboardMode.NONE)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         for tooltip, builder in (("Applications", self.applications_menu),
