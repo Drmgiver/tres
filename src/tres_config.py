@@ -2,6 +2,7 @@
 """Reconfigure Tres: self-contained GTK3 settings for the Labwc desktop."""
 from __future__ import annotations
 
+import os
 import shutil
 import sys
 
@@ -311,6 +312,9 @@ def main() -> None:
     defaults.pack_start(save_defaults, False, False, 0)
 
     window.show_all()
+    # CI exercises the real GTK3 widget tree under Xvfb without a compositor.
+    if os.environ.get("TRES_SETTINGS_SMOKE") == "1":
+        GLib.timeout_add(400, lambda: window.destroy() or False)
     Gtk.main()
 
 
