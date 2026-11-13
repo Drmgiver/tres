@@ -42,8 +42,8 @@ jobs:
           srcdir="${GITHUB_REPOSITORY#*/}"
           cd ..
           tar --exclude-vcs --exclude="$srcdir/debian" \
-            --transform="s|^$srcdir|tres-0.5.4|" \
-            -czf tres_0.5.4.orig.tar.gz "$srcdir"
+            --transform="s|^$srcdir|tres-0.5.5|" \
+            -czf tres_0.5.5.orig.tar.gz "$srcdir"
 
       - name: Build installable binary package
         run: dpkg-buildpackage --build=binary --no-sign
