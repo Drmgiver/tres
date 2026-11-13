@@ -212,13 +212,22 @@ class Tres:
             reserver.set_resizable(False)
             reserver.set_app_paintable(True)
             reserver.set_opacity(0)
-            reserver.set_size_request(1, 1)
+            # The reservation surface must never swallow pointer events.
+            reserver.connect("realize", lambda widget:
+                             widget.get_window().set_pass_through(True))
             GtkLayerShell.init_for_window(reserver)
             GtkLayerShell.set_layer(reserver, GtkLayerShell.Layer.TOP)
             GtkLayerShell.set_keyboard_mode(
                 reserver, GtkLayerShell.KeyboardMode.NONE)
             self._reservation_window = reserver
         reserver = self._reservation_window
+        # Keep a real, mapped full-width/full-height strip. Merely making a
+        # 1x1 invisible surface with perpendicular anchors can leave a
+        # compositor with no useful surface geometry to reserve against.
+        reserver.set_size_request(
+            monitor[0] if edge in ("top", "bottom") else 1,
+            monitor[1] if edge in ("left", "right") else 1,
+        )
         anchors = {
             "top": (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.LEFT,
                     GtkLayerShell.Edge.RIGHT),
