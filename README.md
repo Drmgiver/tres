@@ -51,6 +51,14 @@ their existing one-level menu. Very large categories are grouped again
 as needed so that no submenu requires scrolling to reach its final entry.
 No applications are excluded.
 
+## Display compatibility
+
+Tres detects enabled monitors using the standard text output of `wlr-randr`,
+which works with older versions that do not provide a `--json` option. The
+Display tab should list your connected output, report its current scale, and
+enable **Apply display scale** when an output is selected. Scaling changes
+continue to be saved only in Tres's private Labwc autostart configuration.
+
 ## Reconfigure Tres
 
 Choose **Reconfigure Tres** from the desktop right-click menu or the rightmost
