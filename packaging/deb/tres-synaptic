@@ -1,0 +1,3 @@
+#!/bin/sh
+# Tres-managed launcher
+exec /bin/bash /usr/lib/tres/tres-synaptic.sh "$@"
