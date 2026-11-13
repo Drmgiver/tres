@@ -30,3 +30,4 @@ src/tres_menu.py usr/share/tres
 scripts/tres-panel-supervisor.sh usr/lib/tres
 packaging/deb/tres-panel-supervisor usr/bin
 packaging/deb/tres-panel-control usr/bin
+scripts/tres-polkit-agent.sh usr/lib/tres
