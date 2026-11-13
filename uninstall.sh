@@ -37,6 +37,8 @@ remove_launcher() {
 }
 
 remove_launcher tres-panel tres_panel
+remove_launcher tres-panel-control tres_panel_control
+remove_launcher tres-panel-supervisor tres_panel_supervisor
 remove_launcher tres-config tres_config
 remove_launcher tres-screenshot tres_screenshot
 remove_launcher tres-open-files tres_open
@@ -51,7 +53,7 @@ fi
 # Avoid deleting unrelated files placed inside the installation directory.
 for module in tres_panel tres_core tres_layout tres_config tres_capture \
               tres_screenshot tres_preferences tres_display tres_shortcuts \
-              tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control; do
+              tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu; do
     [[ ! -f "$DEST/$module.py" || -L "$DEST/$module.py" ]] ||
         rm -- "$DEST/$module.py"
 done
