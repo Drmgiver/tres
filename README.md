@@ -82,13 +82,20 @@ continue to be saved only in Tres's private Labwc autostart configuration.
 ## Free panel placement
 
 Tres positions the **middle white square** on the centerline of the chosen
-screen edge. In **Reconfigure Tres → Appearance**, choose Top, Bottom, Left
-or Right and adjust the X/Y pixel offsets. Hold **Super** and left-drag one
-of the three squares to move the group; its offset is saved across sessions.
-The original under/over/reserved stacking choices remain separate from
-placement. Use **Reset position to top center** in Appearance to restore
-the original position. Full-screen positions are constrained so the three
-squares remain visible.
+screen edge. Top and Bottom display the classic **horizontal row**;
+Left and Right display a **vertical stack** in the order Applications,
+Running windows, Applets (top to bottom). In **Reconfigure Tres → Appearance**,
+choose the edge and adjust X/Y pixel offsets. Switching edges resets offsets
+to zero so the selected side starts centered. Hold **Super** and left-drag
+any square to move the whole group; the offset persists across sessions.
+
+Under and Over position the visible squares without reserving work area.
+**Space reserved** uses a separate invisible edge-anchored layer-shell
+surface to reserve the occupied band on the selected edge; this avoids
+ambiguous corner anchors when the panel is moved. Switching away from
+Space reserved releases that reservation. Use **Reset position to top center**
+to restore the original position. Coordinates are clamped to keep all three
+squares visible.
 
 ## Reconfigure Tres
 
