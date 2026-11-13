@@ -1,3 +1,12 @@
+tres (0.5.2-1) unstable; urgency=medium
+
+  * Discover Wayland displays using the standard wlr-randr text output,
+    including older versions that do not support the --json option.
+  * Restore the Output selector and Apply display scale control in settings.
+  * Preserve the active scale and the existing Tres autostart scale block.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Fri, 13 Nov 2026 12:15:00 -0600
+
 tres (0.5.1-1) unstable; urgency=medium
 
   * Remove unrelated desktop and distribution branding throughout Tres.
