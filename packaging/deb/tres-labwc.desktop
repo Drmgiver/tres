@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Tres (Labwc)
+Comment=Three-square minimalist Wayland desktop
+Exec=/usr/bin/tres-labwc-session
+TryExec=/usr/bin/labwc
+Type=Application
+DesktopNames=labwc
+X-Tres-Labwc=true
