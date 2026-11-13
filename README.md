@@ -18,6 +18,28 @@ No permanent taskbar, dock, or full-width panel. By default, the three squares
 sit above the wallpaper but **below normal windows**, so maximizing a window
 covers them completely. Users can choose different stacking behavior.
 
+## Tres Screenshot
+
+Open **Applications → Accessories → Tres Screenshot**. The small GTK3 GUI
+supports **Entire screen** and **Select an area** with an optional 0, 3, or
+5-second delay, plus a Save As dialog. It uses Grim for capturing and Slurp
+for area selection; it does not depend on COSMIC or GNOME's screenshot portal.
+Press Escape while selecting an area to return to the dialog.
+
+The screenshot app is separate from existing Ubuntu screenshot tools. Tres
+leaves those installed and gives its own launcher a distinct name. The
+source installer and update script install the user-local launcher without
+sudo. The `.deb` includes the application and the Grim/Slurp dependencies.
+
+```bash
+cd ~/Tres
+git pull --ff-only
+bash scripts/update-panel.sh
+```
+
+The application menu gets the new launcher on its next opening; logging out
+and back in is not normally required for this standalone utility.
+
 ## Large application categories
 
 GTK3's long submenu scrolling can stop prematurely on Wayland, hiding

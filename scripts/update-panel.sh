@@ -17,7 +17,7 @@ import ast
 from pathlib import Path
 import sys
 src = Path(sys.argv[1]) / "src"
-for name in ("tres_core.py", "tres_panel.py", "tres_layout.py", "tres_config.py"):
+for name in ("tres_core.py", "tres_panel.py", "tres_layout.py", "tres_config.py", "tres_capture.py", "tres_screenshot.py"):
     ast.parse((src / name).read_text(encoding="utf-8"), filename=name)
 print("Python source syntax: OK")
 PY
@@ -26,6 +26,9 @@ install -m 0644 "$ROOT/src/tres_core.py" "$DEST/tres_core.py"
 install -m 0644 "$ROOT/src/tres_panel.py" "$DEST/tres_panel.py"
 install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
+install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
+install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
+bash "$ROOT/scripts/install-screenshot.sh"
 mkdir -p "$BIN" "$CFG"
 cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
