@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Tres Files
+Comment=Open your default file manager
+Exec=tres-open-files
+Icon=system-file-manager
+Categories=System;FileManager;
+Terminal=false
+NoDisplay=true
