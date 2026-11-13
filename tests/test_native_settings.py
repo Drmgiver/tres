@@ -182,6 +182,7 @@ class UpgradeTests(TestCase):
                              previous)
             self.assertTrue((home / ".local/bin/tres-open-files").exists())
             self.assertTrue((home / ".local/bin/tres-wallpaper").exists())
+            self.assertTrue((home / ".local/bin/tres-open-terminal").exists())
 
 
 class FileManagerTests(TestCase):
@@ -210,6 +211,7 @@ class FileManagerTests(TestCase):
         self.assertIn("packaging/deb/tres-open-files usr/bin", install)
         self.assertIn("scripts/install-settings.sh",
                       (ROOT / "scripts/update-panel.sh").read_text())
+        self.assertIn("packaging/deb/tres-open-terminal usr/bin", install)
 
 
 if __name__ == "__main__":
