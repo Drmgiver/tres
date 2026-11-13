@@ -72,4 +72,6 @@ sys.path.insert(0, "/usr/share/tres")
 from tres_menu import add_restart_action
 add_restart_action(directory / "menu.xml", "/usr/bin/tres-panel-control restart")
 PY
+# Set up the optional search binding once for existing packaged installations.
+TRES_MODULE_DIR=/usr/share/tres /bin/bash /usr/lib/tres/install-search-shortcut.sh
 exec /usr/lib/tres/tres-session.sh "$@"
