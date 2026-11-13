@@ -1,4 +1,4 @@
-name: Debian package
+name: Tres Debian package
 
 on:
   push:
@@ -35,22 +35,24 @@ jobs:
 
       - name: Create upstream source tarball for source-package review
         run: |
+          srcdir="${GITHUB_REPOSITORY#*/}"
           cd ..
-          tar --exclude='tres-labwc/.git' --exclude='tres-labwc/debian' \
-            -czf tres-labwc_0.1.0.orig.tar.gz tres-labwc
+          tar --exclude-vcs --exclude="$srcdir/debian" \
+            --transform="s|^$srcdir|tres-0.2.0|" \
+            -czf tres_0.2.0.orig.tar.gz "$srcdir"
 
       - name: Build installable binary package
         run: dpkg-buildpackage --build=binary --no-sign
 
       - name: Inspect package contents and metadata
         run: |
-          dpkg-deb --info ../tres-labwc_*_all.deb
-          dpkg-deb --contents ../tres-labwc_*_all.deb
-          sha256sum ../tres-labwc_*_all.deb
+          dpkg-deb --info ../tres_*_all.deb
+          dpkg-deb --contents ../tres_*_all.deb
+          sha256sum ../tres_*_all.deb
 
       - name: Run lintian review (report findings, do not mask build errors)
         run: |
-          lintian ../tres-labwc_*_all.deb | tee ../lintian-report.txt || true
+          lintian ../tres_*_all.deb | tee ../lintian-report.txt || true
 
       - name: Build unsigned source package for review
         run: dpkg-buildpackage --build=source --no-sign
@@ -58,13 +60,13 @@ jobs:
       - name: Stage package artifacts inside the workspace
         run: |
           mkdir -p dist
-          cp ../tres-labwc_*.deb ../tres-labwc_*.dsc \
-            ../tres-labwc_*.debian.tar.* ../tres-labwc_*.orig.tar.* \
-            ../tres-labwc_*.changes ../lintian-report.txt dist/
+          cp ../tres_*.deb ../tres_*.dsc \
+            ../tres_*.debian.tar.* ../tres_*.orig.tar.* \
+            ../tres_*.changes ../lintian-report.txt dist/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tres-labwc-debian-packages
+          name: tres-debian-packages
           path: dist/
           if-no-files-found: error
