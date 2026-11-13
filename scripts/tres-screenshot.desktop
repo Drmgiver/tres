@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Tres Screenshot
+Comment=Capture the screen or select an area using Grim and Slurp
+Exec=sh -c 'exec "$HOME/.local/bin/tres-screenshot"'
+Icon=camera-photo
+Categories=Utility;GTK;
+Terminal=false
+StartupNotify=true
