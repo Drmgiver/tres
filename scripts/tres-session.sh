@@ -2,7 +2,7 @@
 # Tres-managed session launcher
 # A standalone session that does not modify other desktop environments.
 export XDG_SESSION_TYPE=wayland
-export XDG_CURRENT_DESKTOP=labwc:wlroots
+export XDG_CURRENT_DESKTOP=tres:labwc:wlroots
 export XDG_SESSION_DESKTOP=tres
 
 # Keep the compositor's own errors across a failed graphical login. The panel
