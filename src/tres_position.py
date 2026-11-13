@@ -53,8 +53,26 @@ def save_position(value: dict, path: Path | None = None) -> None:
             os.unlink(temporary)
 
 
-def panel_size(square_size: int) -> tuple[int, int]:
-    return square_size * 3 + 2 * SQUARE_SPACING, square_size
+def panel_size(square_size: int, edge: str = "top") -> tuple[int, int]:
+    """Top/bottom run horizontally; left/right stack all three vertically."""
+    if edge not in EDGES:
+        raise ValueError("Unknown panel edge.")
+    span = square_size * 3 + 2 * SQUARE_SPACING
+    return (span, square_size) if edge in ("top", "bottom") else (square_size, span)
+
+
+def reservation_depth(edge: str, x: int, y: int, width: int, height: int,
+                      monitor_width: int, monitor_height: int) -> int:
+    """Reserve precisely the occupied band from the selected screen edge."""
+    if edge == "top":
+        return y + height
+    if edge == "bottom":
+        return monitor_height - y
+    if edge == "left":
+        return x + width
+    if edge == "right":
+        return monitor_width - x
+    raise ValueError("Unknown panel edge.")
 
 
 def origin(edge: str, panel_width: int, panel_height: int,
