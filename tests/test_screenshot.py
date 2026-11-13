@@ -1,7 +1,10 @@
 """Verify Grim/Slurp are invoked safely and the Accessories launcher exists."""
+import os
 import pathlib
+import subprocess
 import sys
 import unittest
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 from subprocess import CompletedProcess, TimeoutExpired
 
@@ -58,6 +61,26 @@ class CaptureTests(unittest.TestCase):
     def test_missing_slurp_is_clear(self, _which):
         with self.assertRaisesRegex(CaptureError, "Slurp is not installed"):
             capture("/tmp/nope.png", select_region=True)
+
+    def test_install_message_mentions_only_tres(self):
+        with TemporaryDirectory() as temp_home:
+            env = {**os.environ, "HOME": temp_home}
+            command = ["bash", str(ROOT / "scripts/install-screenshot.sh")]
+            result = subprocess.run(
+                command, env=env, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(
+                result.stdout.strip(),
+                "Tres Screenshot added to Accessories.",
+            )
+            self.assertTrue(
+                (pathlib.Path(temp_home) / ".local/bin/tres-screenshot").is_file()
+            )
+            self.assertTrue(
+                (pathlib.Path(temp_home) /
+                 ".local/share/applications/tres-screenshot.desktop").is_file()
+            )
 
     def test_desktop_launcher_is_accessories(self):
         for name in ("scripts/tres-screenshot.desktop", "packaging/deb/tres-screenshot.desktop"):
