@@ -11,8 +11,8 @@ Three **blank, 19×19 white squares** centered 3px below the top of the display:
 
 1. **Left:** installed applications, grouped in menus.
 2. **Middle:** running windows; select one to activate it.
-3. **Right:** clock, battery, audio, network/settings launchers, log out,
-   restart, and shut down.
+3. **Right:** clock, battery, audio, network/Bluetooth controls,
+   **Reconfigure Tres**, log out, restart, and shut down.
 
 No permanent taskbar, dock, or full-width panel. By default, the three squares
 sit above the wallpaper but **below normal windows**, so maximizing a window
@@ -67,6 +67,11 @@ Choose a mode and press **Apply**. The panel picks up the new setting within
 about a second; no logout is required. The setting is saved at
 `~/.config/tres/panel-mode` and remains across logins. **Cancel** leaves
 the previous setting unchanged.
+
+**Reconfigure Tres** is also available from the rightmost square, in place
+of the incompatible COSMIC System Settings shortcut. Tres's settings dialog
+currently manages the three-square stacking mode; it is not a full
+desktop-settings suite.
 
 The right-click menu also retains Labwc's original **Reconfigure**
 (reload compositor configuration) and **Exit** (log out) actions.

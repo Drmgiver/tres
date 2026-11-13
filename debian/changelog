@@ -1,3 +1,10 @@
+tres (0.4.1-1) unstable; urgency=medium
+
+  * Remove COSMIC-only System settings shortcut from Tres applets.
+  * Open the native Reconfigure Tres dialog from the right square.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Fri, 13 Nov 2026 10:59:00 -0600
+
 tres (0.4.0-1) unstable; urgency=medium
 
   * Add Tres Screenshot GTK3 capture dialog to Accessories.
