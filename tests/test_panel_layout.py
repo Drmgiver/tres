@@ -1,4 +1,4 @@
-"""Check Tres's requested Wayland stacking behavior without a compositor."""
+"""Test the requested Wayland stacking behavior without a compositor."""
 import ast
 from pathlib import Path
 import unittest
@@ -6,34 +6,72 @@ import unittest
 SOURCE = Path(__file__).resolve().parents[1] / "src" / "tres_panel.py"
 
 
+class FakeLayerShell:
+    class Layer:
+        TOP = "top"
+        BOTTOM = "bottom"
+
+    def __init__(self):
+        self.calls = []
+
+    def set_layer(self, window, layer):
+        self.calls.append(("layer", layer))
+
+    def set_exclusive_zone(self, window, amount):
+        self.calls.append(("exclusive", amount))
+
+    def auto_exclusive_zone_enable(self, window):
+        self.calls.append(("auto-exclusive",))
+
+
 class TestPanelLayout(unittest.TestCase):
-    def test_normal_and_maximized_windows_cover_three_squares(self):
+    def load_layout_method(self):
         tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
         cls = next(n for n in tree.body
                    if isinstance(n, ast.ClassDef) and n.name == "Tres")
-        init = next(n for n in cls.body
-                    if isinstance(n, ast.FunctionDef) and n.name == "__init__")
-        calls = [
-            node.value for node in init.body
-            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
-        ]
-        def find(name):
-            return [
-                call for call in calls
-                if isinstance(call.func, ast.Attribute)
-                and call.func.attr == name
-                and isinstance(call.func.value, ast.Name)
-                and call.func.value.id == "GtkLayerShell"
-            ]
+        method = next(n for n in cls.body
+                      if isinstance(n, ast.FunctionDef) and n.name == "_apply_mode")
+        code = ast.Module(body=[ast.ClassDef(
+            name="TestOnlyPanel", bases=[], keywords=[], body=[method],
+            decorator_list=[])], type_ignores=[])
+        fake = FakeLayerShell()
+        namespace = {"GtkLayerShell": fake}
+        exec(compile(ast.fix_missing_locations(code), str(SOURCE), "exec"), namespace)
+        panel = namespace["TestOnlyPanel"]()
+        panel.window = object()
+        panel._layout_mode = None
+        return panel, fake
 
-        layers = find("set_layer")
-        self.assertEqual(len(layers), 1)
-        self.assertEqual(ast.unparse(layers[0].args[1]),
-                         "GtkLayerShell.Layer.BOTTOM")
-        zones = find("set_exclusive_zone")
-        self.assertEqual(len(zones), 1)
-        self.assertEqual(ast.literal_eval(zones[0].args[1]), 0)
-        self.assertFalse(find("auto_exclusive_zone_enable"))
+    def test_under_allows_windows_to_cover_boxes(self):
+        panel, shell = self.load_layout_method()
+        panel._apply_mode("under")
+        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "bottom")])
+        self.assertEqual(panel._layout_mode, "under")
+
+    def test_over_has_no_reserved_space(self):
+        panel, shell = self.load_layout_method()
+        panel._apply_mode("over")
+        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "top")])
+        self.assertEqual(panel._layout_mode, "over")
+
+    def test_reserved_uses_automatic_height(self):
+        panel, shell = self.load_layout_method()
+        panel._apply_mode("reserved")
+        self.assertEqual(shell.calls, [("layer", "top"), ("auto-exclusive",)])
+        self.assertEqual(panel._layout_mode, "reserved")
+
+    def test_reserved_can_be_undone_without_restart(self):
+        panel, shell = self.load_layout_method()
+        panel._apply_mode("reserved")
+        shell.calls.clear()
+        panel._apply_mode("under")
+        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "bottom")])
+
+    def test_invalid_mode_not_applied(self):
+        panel, shell = self.load_layout_method()
+        with self.assertRaises(ValueError):
+            panel._apply_mode("unknown")
+        self.assertEqual(shell.calls, [])
 
 
 if __name__ == "__main__":

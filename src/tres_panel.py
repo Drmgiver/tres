@@ -22,10 +22,12 @@ def setup_gi():
 
 try:
     Gdk, Gio, Gtk, GtkLayerShell = setup_gi()
+    from gi.repository import GLib
 except (ImportError, ValueError) as error:
     sys.exit(f"GTK3 layer-shell not installed: {error}\nRun bash install.sh")
 
 from tres_core import activate, request_power_action, windows  # noqa: E402
+from tres_layout import read_mode  # noqa: E402
 
 STYLE = b"""
 window#tres-root { background-color: transparent; }
@@ -101,13 +103,11 @@ class Tres:
                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         GtkLayerShell.init_for_window(self.window)
-        # Bottom layer is above wallpaper, but below normal windows.
-        # A maximized window should cover all three squares naturally.
-        GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.BOTTOM)
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.TOP, True)
         GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.TOP, 3)
-        GtkLayerShell.set_exclusive_zone(self.window, 0)
         GtkLayerShell.set_keyboard_mode(self.window, GtkLayerShell.KeyboardMode.NONE)
+        self._layout_mode = None
+        self._apply_mode(read_mode())
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         for tooltip, builder in (("Applications", self.applications_menu),
                                  ("Running windows", self.windows_menu),
@@ -121,6 +121,32 @@ class Tres:
             box.pack_start(btn, False, False, 0)
         self.window.add(box)
         self.window.show_all()
+        # A change made in the separate right-click configuration dialog
+        # takes effect without restarting the desktop or the panel.
+        GLib.timeout_add_seconds(1, self._check_mode)
+
+    def _apply_mode(self, mode: str) -> None:
+        if mode == "under":
+            # Above the wallpaper but beneath normal and maximized windows.
+            GtkLayerShell.set_exclusive_zone(self.window, 0)
+            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.BOTTOM)
+        elif mode == "over":
+            # Always visible over normal/maximized windows, no lost screen space.
+            GtkLayerShell.set_exclusive_zone(self.window, 0)
+            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.TOP)
+        elif mode == "reserved":
+            # The compositor allocates a strip equal to the squares plus margin.
+            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.TOP)
+            GtkLayerShell.auto_exclusive_zone_enable(self.window)
+        else:
+            raise ValueError(f"Unknown Tres stacking mode: {mode}")
+        self._layout_mode = mode
+
+    def _check_mode(self) -> bool:
+        mode = read_mode()
+        if mode != self._layout_mode:
+            self._apply_mode(mode)
+        return True
 
     def open_menu(self, button, builder) -> None:
         menu = builder()

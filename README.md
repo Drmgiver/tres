@@ -14,9 +14,32 @@ Three **blank, 19×19 white squares** centered 3px below the top of the display:
 3. **Right:** clock, battery, audio, network/settings launchers, log out,
    restart, and shut down.
 
-No permanent taskbar, dock, full-width panel, or reserved space.
-The three squares sit above the wallpaper but **below normal windows**.
-Maximized windows cover them completely.
+No permanent taskbar, dock, or full-width panel. By default, the three squares
+sit above the wallpaper but **below normal windows**, so maximizing a window
+covers them completely. Users can choose different stacking behavior.
+
+## Reconfigure Tres
+
+Right-click an empty part of the desktop and choose **Reconfigure Tres**.
+A small GTK3 dialog offers three modes:
+
+- **Under** (default): the squares appear on the desktop and normal or
+  maximized windows can cover them.
+- **Over**: the squares stay above normal and maximized windows, but do
+  not reserve screen space.
+- **Space reserved**: the squares remain visible above windows while Labwc
+  reserves a narrow top strip, so maximized windows start below them.
+
+Choose a mode and press **Apply**. The panel picks up the new setting within
+about a second; no logout is required. The setting is saved at
+`~/.config/tres/panel-mode` and remains across logins. **Cancel** leaves
+the previous setting unchanged.
+
+The right-click menu also retains Labwc's original **Reconfigure**
+(reload compositor configuration) and **Exit** (log out) actions.
+A customized `~/.config/tres/labwc/menu.xml` is never overwritten.
+When upgrading a script-installed Tres, run `bash scripts/update-panel.sh`,
+then log out and back in once to load the new panel code.
 
 ## Why Labwc?
 

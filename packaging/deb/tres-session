@@ -11,4 +11,9 @@ if [ ! -e "$config/autostart" ]; then
     cp /usr/share/tres/autostart "$config/autostart"
     chmod 0755 "$config/autostart"
 fi
+# Do not overwrite a customized desktop right-click menu.
+if [ ! -e "$config/menu.xml" ]; then
+    cp /usr/share/tres/menu.xml "$config/menu.xml"
+    chmod 0644 "$config/menu.xml"
+fi
 exec /usr/lib/tres/tres-session.sh "$@"

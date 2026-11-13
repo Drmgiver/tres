@@ -1,7 +1,11 @@
 src/tres_panel.py usr/share/tres
 src/tres_core.py usr/share/tres
+src/tres_layout.py usr/share/tres
+src/tres_config.py usr/share/tres
 scripts/tres-session.sh usr/lib/tres
 packaging/deb/tres-panel usr/bin
+packaging/deb/tres-config usr/bin
+packaging/deb/menu.xml usr/share/tres
 packaging/deb/tres-session usr/bin
 packaging/deb/autostart usr/share/tres
 packaging/deb/tres.desktop usr/share/wayland-sessions

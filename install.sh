@@ -36,11 +36,24 @@ fi
 mkdir -p "$DEST" "$BIN" "$CFG"
 install -m 0644 "$ROOT/src/tres_core.py" "$DEST/tres_core.py"
 install -m 0644 "$ROOT/src/tres_panel.py" "$DEST/tres_panel.py"
+install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
+install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 cat > "$BIN/tres-panel" <<'EOF'
 #!/bin/sh
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_panel.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-panel"
+cat > "$BIN/tres-config" <<'EOF'
+#!/bin/sh
+# Tres stacking configuration launcher.
+exec /usr/bin/python3 "$HOME/.local/share/tres/tres_config.py" "$@"
+EOF
+chmod 0755 "$BIN/tres-config"
+if [[ ! -e "$CFG/menu.xml" ]]; then
+    install -m 0644 "$ROOT/scripts/menu.xml" "$CFG/menu.xml"
+else
+    echo "Keeping existing $CFG/menu.xml (add Reconfigure Tres manually if customized)"
+fi
 if [[ ! -e "$CFG/autostart" ]]; then
     install -m 0755 "$ROOT/scripts/autostart" "$CFG/autostart"
 else
