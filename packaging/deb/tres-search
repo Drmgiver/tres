@@ -1,0 +1,3 @@
+#!/bin/sh
+# Tres-managed launcher
+exec /usr/bin/python3 /usr/share/tres/tres_search.py "$@"
