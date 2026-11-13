@@ -45,21 +45,21 @@ class TestPanelLayout(unittest.TestCase):
     def test_under_allows_windows_to_cover_boxes(self):
         panel, shell = self.load_layout_method()
         panel._apply_mode("under")
-        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "bottom")])
+        self.assertEqual(shell.calls, [("exclusive", -1), ("layer", "bottom")])
         self.assertEqual(panel._layout_mode, "under")
 
     def test_over_has_no_reserved_space(self):
         panel, shell = self.load_layout_method()
         panel._apply_mode("over")
-        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "top")])
+        self.assertEqual(shell.calls, [("exclusive", -1), ("layer", "top")])
         self.assertEqual(panel._layout_mode, "over")
 
     def test_reserved_uses_independent_edge_surface(self):
         panel, shell = self.load_layout_method()
         panel._apply_mode("reserved")
-        # The visible corner-anchored surface cannot safely claim an
-        # exclusive zone. The separate edge-anchored reserver does that.
-        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "top")])
+        # The visible surface must ignore reserved areas to remain fixed. The
+        # independent edge-anchored surface claims the reserved work area.
+        self.assertEqual(shell.calls, [("exclusive", -1), ("layer", "top")])
         self.assertEqual(panel._layout_mode, "reserved")
         source = SOURCE.read_text(encoding="utf-8")
         self.assertIn("def _reserve_work_area(", source)
@@ -70,7 +70,7 @@ class TestPanelLayout(unittest.TestCase):
         panel._apply_mode("reserved")
         shell.calls.clear()
         panel._apply_mode("under")
-        self.assertEqual(shell.calls, [("exclusive", 0), ("layer", "bottom")])
+        self.assertEqual(shell.calls, [("exclusive", -1), ("layer", "bottom")])
 
     def test_invalid_mode_not_applied(self):
         panel, shell = self.load_layout_method()
