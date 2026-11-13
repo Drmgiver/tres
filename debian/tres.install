@@ -9,9 +9,16 @@ src/tres_display.py usr/share/tres
 src/tres_shortcuts.py usr/share/tres
 src/tres_open.py usr/share/tres
 src/tres_wallpaper.py usr/share/tres
+src/tres_preferences.py usr/share/tres
+src/tres_display.py usr/share/tres
+src/tres_shortcuts.py usr/share/tres
+src/tres_open.py usr/share/tres
+src/tres_wallpaper.py usr/share/tres
 scripts/tres-session.sh usr/lib/tres
 packaging/deb/tres-panel usr/bin
 packaging/deb/tres-config usr/bin
+packaging/deb/tres-open-files usr/bin
+packaging/deb/tres-wallpaper usr/bin
 packaging/deb/tres-screenshot usr/bin
 packaging/deb/tres-open-files usr/bin
 packaging/deb/tres-wallpaper usr/bin
