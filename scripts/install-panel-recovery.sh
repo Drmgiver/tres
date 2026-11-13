@@ -5,6 +5,16 @@ ROOT="$(cd -- "$(dirname -- "$0")/.." && pwd)"
 BIN="$HOME/.local/bin"
 CFG="$HOME/.config/tres/labwc"
 mkdir -p "$BIN" "$CFG"
+# These are Tres-owned launchers; never clobber an unrelated executable.
+for launcher in tres-panel-supervisor tres-panel-control; do
+    target="$BIN/$launcher"
+    if [[ -L "$target" ]] ||
+       { [[ -e "$target" ]] &&
+         ! grep -qx '# Tres-managed launcher' "$target" 2>/dev/null; }; then
+        echo "Refusing to replace unrecognized launcher: $target" >&2
+        exit 1
+    fi
+done
 install -m 0755 "$ROOT/scripts/tres-panel-supervisor.sh" "$BIN/tres-panel-supervisor"
 cat > "$BIN/tres-panel-control" <<'EOF'
 #!/bin/sh
