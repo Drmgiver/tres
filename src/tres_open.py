@@ -59,21 +59,25 @@ def file_manager_choices(registered, installed, current=None) -> dict:
 
 
 def open_home() -> None:
-    problem = "The selected file manager could not be opened."
+    """Launch the chosen XDG handler, never silently substitute another app."""
     try:
         import gi
         gi.require_version("Gio", "2.0")
         from gi.repository import Gio
         app = Gio.AppInfo.get_default_for_type("inode/directory", False)
-        if app is not None:
-            # Honor the user's XDG preference even if the desktop entry is
-            # outside the small fallback list. Do not filter by desktop origin.
-            files = [Gio.File.new_for_path(str(Path.home()))]
-            if app.launch(files, None):
-                return
+        if app is None:
+            raise FileManagerError("No default folder application is configured.")
+        files = [Gio.File.new_for_path(str(Path.home()))]
+        if not app.launch(files, None):
+            raise FileManagerError(f"Could not launch {app.get_name()}.")
+    except FileManagerError:
+        raise
     except Exception as error:
-        problem = str(error)
+        raise FileManagerError(f"Unable to open the selected file manager: {error}") from error
 
+
+def launch_fallback() -> None:
+    """Explicit user-approved alternative to the selected file manager."""
     for binary in FILE_MANAGERS:
         if shutil.which(binary):
             try:
@@ -83,28 +87,42 @@ def open_home() -> None:
             except OSError:
                 continue
     raise FileManagerError(
-        "No file manager could be opened. Install one, such as "
-        "'sudo apt install thunar', and select it in Reconfigure Tres → "
-        "Default applications. " + problem
+        "No alternative file manager could be opened. "
+        "Select one in Reconfigure Tres → Default applications."
     )
 
 
 def main() -> None:
     try:
         open_home()
+        return
     except FileManagerError as error:
         try:
             import gi
             gi.require_version("Gtk", "3.0")
             from gi.repository import Gtk
             dialog = Gtk.MessageDialog(
-                message_type=Gtk.MessageType.ERROR,
-                buttons=Gtk.ButtonsType.CLOSE,
-                text="Tres cannot open Files",
+                message_type=Gtk.MessageType.QUESTION,
+                buttons=Gtk.ButtonsType.YES_NO,
+                text="Tres could not open the selected file manager",
             )
-            dialog.format_secondary_text(str(error)[:600])
-            dialog.run()
+            dialog.format_secondary_text(str(error)[:500] +
+                                         "\nTry another installed file manager?")
+            choice = dialog.run()
             dialog.destroy()
+            if choice == Gtk.ResponseType.YES:
+                try:
+                    launch_fallback()
+                    return
+                except FileManagerError as fallback_error:
+                    problem = Gtk.MessageDialog(
+                        message_type=Gtk.MessageType.ERROR,
+                        buttons=Gtk.ButtonsType.CLOSE,
+                        text="Unable to open Files",
+                    )
+                    problem.format_secondary_text(str(fallback_error))
+                    problem.run()
+                    problem.destroy()
         except (ImportError, ValueError):
             import sys
             print(f"Tres Files: {error}", file=sys.stderr)
