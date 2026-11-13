@@ -42,3 +42,38 @@ def change_volume(direction: str) -> None:
         raise AudioError(
             (proc.stderr or proc.stdout or "The audio server rejected the command.").strip()
         )
+
+def volume_label() -> str:
+    """Read the current default output level without changing it."""
+    import re
+
+    backend = audio_backend()
+    if backend is None:
+        return "Volume: unavailable"
+    command = (["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"]
+               if backend == "wpctl" else
+               ["pactl", "get-sink-volume", "@DEFAULT_SINK@"])
+    try:
+        proc = subprocess.run(command, capture_output=True, text=True,
+                              timeout=3, check=False)
+        if proc.returncode:
+            return "Volume: unavailable"
+        if backend == "wpctl":
+            match = re.search(r"Volume:\\s*([0-9]+(?:\\.[0-9]+)?)", proc.stdout)
+            if not match:
+                return "Volume: unavailable"
+            level = round(float(match.group(1)) * 100)
+            muted = "[MUTED]" in proc.stdout
+        else:
+            match = re.search(r"([0-9]+)%", proc.stdout)
+            if not match:
+                return "Volume: unavailable"
+            level = int(match.group(1))
+            mute = subprocess.run(["pactl", "get-sink-mute", "@DEFAULT_SINK@"],
+                                  capture_output=True, text=True, timeout=3,
+                                  check=False)
+            muted = mute.returncode == 0 and bool(re.search(
+                r"Mute:\\s*yes", mute.stdout, re.IGNORECASE))
+        return f"Volume: {level}%" + (" (muted)" if muted else "")
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return "Volume: unavailable"
