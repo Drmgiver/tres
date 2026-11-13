@@ -19,7 +19,8 @@ if [[ -e "$SESSION" ]] && ! grep -q '^X-Tres=true$' "$SESSION"; then
     echo "Refusing to replace unknown existing session: $SESSION" >&2
     exit 1
 fi
-if [[ -e "$SYSTEM_WRAPPER" ]] && ! grep -q '^# A dedicated session' "$SYSTEM_WRAPPER"; then
+if [[ -e "$SYSTEM_WRAPPER" ]] &&
+   ! grep -Eq '^# (Tres-managed session launcher|A standalone session|A dedicated session)' "$SYSTEM_WRAPPER"; then
     echo "Refusing to replace unknown launcher: $SYSTEM_WRAPPER" >&2
     exit 1
 fi
@@ -47,11 +48,13 @@ bash "$ROOT/scripts/install-screenshot.sh"
 bash "$ROOT/scripts/install-settings.sh"
 cat > "$BIN/tres-panel" <<'EOF'
 #!/bin/sh
+# Tres-managed launcher
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_panel.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-panel"
 cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
+# Tres-managed launcher
 # Tres stacking configuration launcher.
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_config.py" "$@"
 EOF
