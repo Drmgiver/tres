@@ -28,7 +28,8 @@ except (ImportError, ValueError) as error:
 
 from tres_core import activate, request_power_action, submenu_pages, windows  # noqa: E402
 from tres_layout import read_mode  # noqa: E402
-from tres_preferences import read_appearance, read_terminal  # noqa: E402
+from tres_preferences import read_appearance  # noqa: E402
+from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
 
 def panel_style(appearance: dict) -> bytes:
     """Safe CSS: colors and size are strictly validated by tres_preferences."""
@@ -299,12 +300,10 @@ class Tres:
 
     @staticmethod
     def open_terminal() -> None:
-        selection = read_terminal()
-        preferred = ((selection,),) if selection != "auto" else ()
-        spawn_first(*(preferred + (
-            ("foot",), ("terminator",), ("alacritty",), ("kitty",),
-            ("gnome-terminal",), ("xfce4-terminal",), ("xterm",)
-        )))
+        try:
+            open_selected_terminal()
+        except RuntimeError as error:
+            print(f"Tres: terminal could not launch: {error}", file=sys.stderr)
 
     @staticmethod
     def audio(level: str, mute: bool = False) -> None:
