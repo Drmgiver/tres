@@ -50,6 +50,7 @@ class TestRightMenuSettings(unittest.TestCase):
             "battery_label": lambda: "Battery: 75%",
             "shutil": SimpleNamespace(which=lambda _: None),
             "spawn_first": mock_spawn,
+            "audio_backend": lambda: "pactl",
             "Path": Path,
         }
         temp = ast.Module(body=[ast.ClassDef(
