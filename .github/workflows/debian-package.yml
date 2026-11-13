@@ -42,8 +42,8 @@ jobs:
           srcdir="${GITHUB_REPOSITORY#*/}"
           cd ..
           tar --exclude-vcs --exclude="$srcdir/debian" \
-            --transform="s|^$srcdir|tres-0.5.5|" \
-            -czf tres_0.5.5.orig.tar.gz "$srcdir"
+            --transform="s|^$srcdir|tres-0.6.0|" \
+            -czf tres_0.6.0.orig.tar.gz "$srcdir"
 
       - name: Build installable binary package
         run: dpkg-buildpackage --build=binary --no-sign
@@ -72,6 +72,13 @@ jobs:
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-open-files"
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-wallpaper"
           test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-open-terminal"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_audio.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_panel_control.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_menu.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres-portals.conf"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-panel-supervisor"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-panel-control"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/lib/tres/tres-panel-supervisor.sh"
 
       - name: Run lintian review (report findings, do not mask build errors)
         run: |
