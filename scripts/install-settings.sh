@@ -10,8 +10,9 @@ install_launcher() {
     local target="$BIN/$name"
 
     # Never replace an unrelated launcher or an unexpected symlink.
-    if [[ -e "$target" || -L "$target" ]] &&
-       ! grep -qx '# Tres-managed launcher' "$target" 2>/dev/null; then
+    if [[ -L "$target" ]] ||
+       { [[ -e "$target" ]] &&
+         ! grep -qx '# Tres-managed launcher' "$target" 2>/dev/null; }; then
         echo "Existing unrecognized $target; not overwriting" >&2
         return
     fi
