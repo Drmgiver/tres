@@ -1,7 +1,4 @@
-"""Open the home folder with the user's desktop-default file manager.
-
-Never hard-code COSMIC Files in the independent Tres session.
-"""
+"""Open the user's home folder with a supported freedesktop file manager."""
 from __future__ import annotations
 
 import shutil
@@ -13,37 +10,34 @@ class FileManagerError(RuntimeError):
     pass
 
 
-# Compatibility fallback when the XDG default still points to COSMIC Files.
+# Compatible standalone file managers. This list is intentionally independent
+# of any particular desktop environment or vendor.
 FILE_MANAGERS = ("thunar", "nemo", "pcmanfm", "pcmanfm-qt",
                  "nautilus", "dolphin", "caja", "spacefm", "xfe")
 
 
-def _is_cosmic(app) -> bool:
+def is_supported_file_manager(app) -> bool:
+    """Recognize the executable, not the origin desktop's brand or app name."""
     try:
-        descriptor = " ".join(str(value or "") for value in
-                              (app.get_id(), app.get_executable(), app.get_name()))
+        executable = str(app.get_executable() or "").strip()
     except (AttributeError, TypeError):
         return False
-    return "cosmic" in descriptor.casefold()
+    return Path(executable).name in FILE_MANAGERS
 
 
 def open_home() -> None:
+    problem = "No supported file manager is set as default."
     try:
         import gi
         gi.require_version("Gio", "2.0")
         from gi.repository import Gio
         app = Gio.AppInfo.get_default_for_type("inode/directory", False)
-        if app is not None and not _is_cosmic(app):
+        if app is not None and is_supported_file_manager(app):
             files = [Gio.File.new_for_path(str(Path.home()))]
             if app.launch(files, None):
                 return
-    except (ImportError, ValueError) as error:
-        # A non-COSMIC fallback is still available without PyGObject.
-        problem = str(error)
     except Exception as error:
         problem = str(error)
-    else:
-        problem = "No compatible file manager set as default."
 
     for binary in FILE_MANAGERS:
         if shutil.which(binary):
@@ -54,7 +48,7 @@ def open_home() -> None:
             except OSError:
                 continue
     raise FileManagerError(
-        "No compatible file manager could be opened. Install one, such as "
+        "No supported file manager could be opened. Install one, such as "
         "'sudo apt install thunar', and select it in Reconfigure Tres → "
         "Default applications. " + problem
     )
