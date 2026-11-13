@@ -7,3 +7,4 @@ Icon=camera-photo
 Categories=Utility;GTK;
 Terminal=false
 StartupNotify=true
+X-Tres-Screenshot=true
