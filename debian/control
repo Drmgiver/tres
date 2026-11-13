@@ -16,7 +16,7 @@ Depends: ${misc:Depends}, ${python3:Depends}, python3, python3-gi,
 Breaks: tres-labwc (<< 0.2~)
 Replaces: tres-labwc (<< 0.2~)
 Recommends: xdg-desktop-portal, xdg-desktop-portal-wlr, xdg-desktop-portal-gtk
-Suggests: pavucontrol, network-manager-gnome, blueman, thunar, wireplumber, pulseaudio-utils
+Suggests: synaptic, x11-xserver-utils, pavucontrol, network-manager-gnome, blueman, thunar, wireplumber, pulseaudio-utils
 Description: three-square minimalist desktop session for Wayland
  Tres is an ultra-minimal desktop interface based on the Labwc Wayland
  compositor. Three small white squares provide an application menu, a
