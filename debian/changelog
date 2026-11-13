@@ -1,3 +1,17 @@
+tres (0.6.0-1) unstable; urgency=medium
+
+  * Repair session ownership checks and clean manual uninstallation.
+  * Preserve separate scaling settings for multiple Wayland outputs.
+  * Add Tres-scoped GTK and wlroots portal integration.
+  * Supervise the three-square panel and allow explicit panel restart.
+  * Display only configured shortcuts; offer opt-in suggested bindings.
+  * Require approval before falling back from a selected file manager.
+  * Support wpctl and pactl audio controls with actionable errors.
+  * Add real headless Labwc/GTK3 integration testing.
+  * Remove duplicate Debian packaging entries and dependencies.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Fri, 13 Nov 2026 13:00:00 -0600
+
 tres (0.5.5-1) unstable; urgency=medium
 
   * List installed graphical file managers in Default applications,
