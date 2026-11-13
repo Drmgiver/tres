@@ -255,10 +255,16 @@ class Tres:
             audio.append(self.item("Sound settings", lambda: spawn_first(("pavucontrol",))))
         menu.append(self.submenu("Audio", audio))
 
+        # Tres runs as its own Labwc session. COSMIC Settings requires COSMIC
+        # services and must not be offered as a Tres system-settings shortcut.
+        # Use the same Tres dialog as the desktop right-click menu instead.
+        menu.append(self.item("Reconfigure Tres…", lambda: spawn_first(
+            (str(Path.home() / ".local/bin/tres-config"),),
+            ("/usr/bin/tres-config",))))
+
         utilities = [
             ("Network connections", ("nm-connection-editor",)),
             ("Bluetooth", ("blueman-manager",)),
-            ("System settings", ("cosmic-settings",)),
             ("Power settings", ("xfce4-power-manager-settings",)),
             ("Files", ("cosmic-files", "--new-window")),
         ]
