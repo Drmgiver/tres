@@ -27,6 +27,37 @@ EOF
     chmod 0755 "$BIN/tres-wallpaper"
 fi
 
+if [[ -e "$BIN/tres-open-terminal" ]] && ! grep -q '^# Tres-managed launcher Never
+# overwrite arbitrary custom wallpaper scripts or the user's scale block.
+if [[ -f "$AUTOSTART" ]] &&
+   grep -Fq "swaybg -c '#141414'" "$AUTOSTART" &&
+   ! grep -Fq 'tres-wallpaper' "$AUTOSTART"; then
+    cp -p -- "$AUTOSTART" "$AUTOSTART.before-tres-wallpaper"
+    /usr/bin/python3 - "$AUTOSTART" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+old = path.read_text(encoding="utf-8")
+updated = old.replace("swaybg -c '#141414'", '"$HOME/.local/bin/tres-wallpaper"')
+if updated != old:
+    path.write_text(updated, encoding="utf-8")
+    os.chmod(path, path.stat().st_mode | 0o100)
+PY
+    echo "Upgraded default Tres wallpaper launcher; previous autostart backed up."
+fi
+ "$BIN/tres-open-terminal"; then
+    echo "Existing unrecognized $BIN/tres-open-terminal; not overwriting" >&2
+else
+    cat > "$BIN/tres-open-terminal" <<'EOF'
+#!/bin/sh
+# Tres-managed launcher
+exec /usr/bin/python3 "$HOME/.local/share/tres/tres_terminal.py" "$@"
+EOF
+    chmod 0755 "$BIN/tres-open-terminal"
+fi
+
 # Migrate only the known, unmodified legacy swaybg command. Never
 # overwrite arbitrary custom wallpaper scripts or the user's scale block.
 if [[ -f "$AUTOSTART" ]] &&
