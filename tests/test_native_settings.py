@@ -201,6 +201,56 @@ class ShortcutsTests(TestCase):
 
 
 class UpgradeTests(TestCase):
+    def test_settings_installer_never_launches_terminal(self):
+        script = ROOT / "scripts/install-settings.sh"
+        syntax = subprocess.run(
+            ["bash", "-n", str(script)], capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(syntax.returncode, 0, syntax.stderr)
+
+        with TemporaryDirectory() as td:
+            home = Path(td)
+            bin_dir = home / ".local/bin"
+            bin_dir.mkdir(parents=True)
+            launched = home / "unexpected-terminal-launch"
+            # An existing, Tres-managed launcher that would visibly create a
+            # terminal if the installer accidentally invoked it.
+            terminal = bin_dir / "tres-open-terminal"
+            terminal.write_text(
+                "#!/bin/sh\\n# Tres-managed launcher\\n"
+                + "touch " + str(launched) + "\\n",
+                encoding="utf-8",
+            )
+            terminal.chmod(0o755)
+            env = {**os.environ, "HOME": td}
+            result = subprocess.run(
+                ["bash", str(script)], env=env, capture_output=True,
+                text=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(launched.exists(),
+                             "Installing launchers unexpectedly started a terminal")
+            self.assertIn("tres_terminal.py", terminal.read_text(encoding="utf-8"))
+            self.assertIn('exec /usr/bin/python3', terminal.read_text(encoding="utf-8"))
+
+    def test_settings_installer_does_not_replace_unowned_launcher(self):
+        script = ROOT / "scripts/install-settings.sh"
+        with TemporaryDirectory() as td:
+            home = Path(td)
+            bin_dir = home / ".local/bin"
+            bin_dir.mkdir(parents=True)
+            terminal = bin_dir / "tres-open-terminal"
+            terminal.write_text("#!/bin/sh\\necho customized\\n", encoding="utf-8")
+            terminal.chmod(0o755)
+            env = {**os.environ, "HOME": td}
+            result = subprocess.run(
+                ["bash", str(script)], env=env, capture_output=True,
+                text=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(terminal.read_text(encoding="utf-8"),
+                             "#!/bin/sh\\necho customized\\n")
+
     def test_shell_updater_keeps_existing_scale_and_custom_configuration(self):
         with TemporaryDirectory() as td:
             home = Path(td)
