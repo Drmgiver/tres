@@ -199,7 +199,7 @@ class Tres:
 
     def applets_menu(self):
         menu = Gtk.Menu()
-        menu.append(self.item(datetime.now().strftime("%a %b %d, %Y  %H:%M")))
+        menu.append(self.item(datetime.now().strftime("%a %b %d, %Y  %-I:%M %p")))
         menu.append(self.item(battery_label()))
         menu.append(self.separator())
 
