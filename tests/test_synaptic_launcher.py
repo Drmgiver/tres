@@ -15,10 +15,14 @@ class SynapticTests(unittest.TestCase):
         subprocess.run(["bash", "-n", str(LAUNCHER)], check=True)
 
     def test_menu_special_cases_only_synaptic(self):
-        source = (ROOT / "src/tres_panel.py").read_text()
-        self.assertIn('("synaptic.desktop", "synaptic-pkexec.desktop")', source)
-        self.assertIn('app.launch([], None)', source)
-        self.assertIn('tres-synaptic', source)
+        # App launch policy is shared by the menu and application search.
+        shared = (ROOT / "src/tres_applications.py").read_text()
+        panel = (ROOT / "src/tres_panel.py").read_text()
+        self.assertIn('("synaptic.desktop", "synaptic-pkexec.desktop")', shared)
+        self.assertIn('app.launch([], None)', shared)
+        self.assertIn('tres-synaptic', shared)
+        self.assertIn('from tres_applications import visible_applications, launch_application', panel)
+        self.assertIn('return launch_application(app)', panel)
 
     def test_grant_and_revoke_even_when_synaptic_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
