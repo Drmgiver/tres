@@ -28,6 +28,8 @@ src/tres_audio.py usr/share/tres
 src/tres_panel_control.py usr/share/tres
 src/tres_menu.py usr/share/tres
 scripts/tres-panel-supervisor.sh usr/lib/tres
+scripts/tres-synaptic.sh usr/lib/tres
+packaging/deb/tres-synaptic usr/bin
 packaging/deb/tres-panel-supervisor usr/bin
 packaging/deb/tres-panel-control usr/bin
 scripts/tres-polkit-agent.sh usr/lib/tres
