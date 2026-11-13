@@ -22,7 +22,8 @@ cleanup() {
 trap cleanup EXIT
 
 export XDG_RUNTIME_DIR="$TMP/runtime"
-mkdir -p "$XDG_RUNTIME_DIR" "$TMP/config"
+export XDG_CONFIG_HOME="$TMP/xdg-config"
+mkdir -p "$XDG_RUNTIME_DIR" "$TMP/config" "$XDG_CONFIG_HOME/tres"
 chmod 0700 "$XDG_RUNTIME_DIR"
 unset WAYLAND_DISPLAY
 export GDK_BACKEND=wayland
@@ -72,6 +73,26 @@ PANEL_PID=$!
 sleep 2
 if ! kill -0 "$PANEL_PID" 2>/dev/null; then
     echo 'Tres panel exited during real Wayland startup.' >&2
+    cat "$TMP/panel.log" >&2
+    exit 1
+fi
+
+# Move the live panel across all four edges, including a real exclusive
+# work-area reservation. Exercise panel orientation and anchor changes in GTK.
+for edge in top bottom left right; do
+    printf '{"edge":"%s","x":0,"y":0}\\n' "$edge" > "$XDG_CONFIG_HOME/tres/panel-position.json"
+    printf 'reserved\\n' > "$XDG_CONFIG_HOME/tres/panel-mode"
+    sleep 2
+    if ! kill -0 "$PANEL_PID" 2>/dev/null; then
+        echo "Tres panel failed with reserved space on $edge." >&2
+        cat "$TMP/panel.log" >&2
+        exit 1
+    fi
+done
+printf 'under\\n' > "$XDG_CONFIG_HOME/tres/panel-mode"
+sleep 2
+if ! kill -0 "$PANEL_PID" 2>/dev/null; then
+    echo "Tres panel failed while leaving reserved mode." >&2
     cat "$TMP/panel.log" >&2
     exit 1
 fi
