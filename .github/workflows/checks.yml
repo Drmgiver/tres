@@ -16,3 +16,14 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Shell syntax
         run: bash -n install.sh uninstall.sh scripts/*.sh && sh -n scripts/autostart scripts/tres-session.sh
+
+  wayland-integration:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install headless Labwc and GTK3 layer-shell
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y labwc wlr-randr dbus-x11 python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1
+      - name: Test real Wayland compositor and Tres UI
+        run: timeout 60s dbus-run-session -- bash scripts/test-wayland-integration.sh
