@@ -283,42 +283,54 @@ class Tres:
         if self._drag is None:
             self._apply_position(self._position)
 
+    @staticmethod
+    def _super_pressed(state):
+        # Wayland compositors normally expose the logo key as MOD4. SUPER_MASK
+        # is an additional keysym modifier and is not set on many systems.
+        return bool(state & (Gdk.ModifierType.MOD4_MASK |
+                             Gdk.ModifierType.SUPER_MASK))
+
     def _drag_press(self, _button, event):
-        if event.button != 1 or not (event.state & Gdk.ModifierType.SUPER_MASK):
+        if event.button != 1 or not self._super_pressed(event.state):
             return False
         monitor = self._monitor_dimensions()
         if monitor is None:
             return False
-        width, height = self._panel_dimensions()
-        x, y = coordinates(self._position, width, height, *monitor)
-        self._drag = (float(event.x_root), float(event.y_root), x, y, False)
+        # Wayland intentionally does not expose global pointer coordinates.
+        # Use coordinates local to the pressed square instead of x_root/y_root.
+        self._drag = (float(event.x), float(event.y), False)
         self._suppress_click = False
         return True
 
     def _drag_motion(self, _button, event):
         if self._drag is None:
             return False
-        start_x, start_y, initial_x, initial_y, moved = self._drag
-        dx, dy = float(event.x_root) - start_x, float(event.y_root) - start_y
+        start_x, start_y, moved = self._drag
+        dx, dy = float(event.x) - start_x, float(event.y) - start_y
         if not moved and abs(dx) + abs(dy) < 3:
             return True
         monitor = self._monitor_dimensions()
         if monitor is None:
             return True
         width, height = self._panel_dimensions()
-        new_x = max(0, min(monitor[0] - width, round(initial_x + dx)))
-        new_y = max(0, min(monitor[1] - height, round(initial_y + dy)))
-        # Keep the selected edge, but move freely using offsets on both axes.
-        self._position = with_coordinates(self._position["edge"], new_x, new_y,
-                                          width, height, *monitor)
-        self._drag = (start_x, start_y, initial_x, initial_y, True)
-        self._apply_position(self._position)
+        current_x, current_y = coordinates(self._position, width, height, *monitor)
+        new_x = max(0, min(max(0, monitor[0] - width), round(current_x + dx)))
+        new_y = max(0, min(max(0, monitor[1] - height), round(current_y + dy)))
+        if (new_x, new_y) != (current_x, current_y):
+            # The widget moves with the pointer, so subsequent event.x/y are
+            # again relative to its NEW position. Incremental deltas track
+            # motion even though Wayland doesn't expose screen coordinates.
+            self._position = with_coordinates(self._position["edge"], new_x, new_y,
+                                              width, height, *monitor)
+            self._apply_position(self._position)
+            moved = True
+        self._drag = (start_x, start_y, moved)
         return True
 
     def _drag_release(self, _button, event):
         if self._drag is None or event.button != 1:
             return False
-        moved = self._drag[4]
+        moved = self._drag[2]
         self._drag = None
         if moved:
             self._suppress_click = True
