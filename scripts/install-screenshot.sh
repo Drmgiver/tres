@@ -8,6 +8,7 @@ mkdir -p -- "$BIN" "$APPS"
 
 cat > "$BIN/tres-screenshot" <<'EOF'
 #!/bin/sh
+# Tres-managed launcher
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_screenshot.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-screenshot"
