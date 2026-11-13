@@ -11,7 +11,8 @@ Three **blank, 19×19 white squares** centered 3px below the top of the display:
 
 1. **Left:** installed applications, grouped in menus.
 2. **Middle:** running windows; select one to activate it.
-3. **Right:** clock, battery, audio, network/settings launchers and log out.
+3. **Right:** clock, battery, audio, network/settings launchers, log out,
+   restart, and shut down.
 
 No permanent taskbar, dock, full-width panel, or reserved space.
 The three squares sit above the wallpaper but **below normal windows**.
@@ -186,6 +187,23 @@ bash uninstall.sh
 
 This removes the Tres login entry and installed panel. Your custom Tres
 configuration and apt dependencies are left in place; **COSMIC is unchanged**.
+
+## Restart and shut down
+
+Open the **rightmost white square** to find:
+
+- **Exit Tres session…**: log out to the login screen, leaving the computer on.
+- **Restart computer…**: request a normal system reboot.
+- **Shut down computer…**: request a normal system poweroff.
+
+Each action asks for confirmation. Restart and shutdown use
+`systemctl reboot` / `systemctl poweroff` through the host's systemd/logind,
+**without `sudo`, `--force`, or forcibly terminating applications**.
+Save work before confirming. If the session's permissions or inhibitors block
+a request, Tres displays the reported error instead of silently doing nothing.
+
+The controls have not yet been hardware-tested across different login managers
+or permission-agent configurations.
 
 ## Window stacking
 
