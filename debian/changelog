@@ -1,3 +1,12 @@
+tres (0.5.5-1) unstable; urgency=medium
+
+  * List installed graphical file managers in Default applications,
+    including entries not registered for the folder MIME type.
+  * Launch the user's selected folder handler without a fixed allowlist.
+  * Distinguish duplicate application names using desktop IDs.
+
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Fri, 13 Nov 2026 12:35:00 -0600
+
 tres (0.5.4-1) unstable; urgency=medium
 
   * Keep the screenshot installer status message application-specific.
