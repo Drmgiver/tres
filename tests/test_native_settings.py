@@ -164,7 +164,7 @@ class ShortcutsTests(TestCase):
                         '<keybind key="A-F10"><action name="Close" /></keybind>'
                         '</keyboard><theme><name>MyTheme</name></theme></labwc_config>')
             p.write_text(original)
-            keys = {"screenshot": "Print", "files": "W-e", "terminal": "W-Return"}
+            keys = {"screenshot": "Print", "files": "W-e", "terminal": "W-Return", "search": "W-space"}
             save_shortcuts(keys, p)
             result = p.read_text()
             ET.fromstring(result)
@@ -174,7 +174,7 @@ class ShortcutsTests(TestCase):
             self.assertEqual(read_shortcuts(p), keys)
             self.assertEqual(result.count("BEGIN TRES SHORTCUTS"), 1)
             save_shortcuts({"screenshot": "W-s", "files": "W-f",
-                            "terminal": "W-Return"}, p)
+                            "terminal": "W-Return", "search": "W-space"}, p)
             result = p.read_text()
             self.assertEqual(result.count("BEGIN TRES SHORTCUTS"), 1)
             self.assertNotIn('key="Print"', result)
@@ -185,10 +185,10 @@ class ShortcutsTests(TestCase):
             p = Path(td) / "rc.xml"
             with self.assertRaises(ValueError):
                 save_shortcuts({"screenshot": "W-e", "files": "W-e",
-                                "terminal": "W-Return"}, p)
+                                "terminal": "W-Return", "search": "W-space"}, p)
             with self.assertRaises(ValueError):
                 save_shortcuts({"screenshot": 'W-e" /> <action name="Exit"',
-                                "files": "W-f", "terminal": "W-Return"}, p)
+                                "files": "W-f", "terminal": "W-Return", "search": "W-space"}, p)
             self.assertFalse(p.exists())
 
     def test_invalid_existing_rc_xml_is_preserved(self):
