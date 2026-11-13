@@ -6,6 +6,7 @@ import shutil
 import sys
 
 from tres_display import DisplayError, apply_scale, output_info
+from tres_open import _is_cosmic
 from tres_layout import MODES, read_mode, save_mode
 from tres_preferences import (DEFAULT_APPEARANCE, TERMINALS, read_appearance,
                               read_terminal, save_appearance, save_terminal)
@@ -244,10 +245,15 @@ def main() -> None:
         available = {}
         for app in Gio.AppInfo.get_all_for_type(mime):
             app_id = app.get_id()
+            if mime == "inode/directory" and _is_cosmic(app):
+                # COSMIC Files relies on a different desktop's services.
+                continue
             if app_id and app_id not in available:
                 available[app_id] = app
         existing = Gio.AppInfo.get_default_for_type(mime, False)
-        if existing and existing.get_id():
+        if existing and existing.get_id() and not (
+            mime == "inode/directory" and _is_cosmic(existing)
+        ):
             available[existing.get_id()] = existing
         for app_id, app in sorted(available.items(),
                                   key=lambda pair: pair[1].get_name().casefold()):
