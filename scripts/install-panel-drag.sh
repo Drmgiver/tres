@@ -2,9 +2,10 @@
 # Configure only Tres's own Labwc compositor; leave other desktops untouched.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+MODULE_DIR="${TRES_MODULE_DIR:-$ROOT/src}"
 RC="$HOME/.config/tres/labwc/rc.xml"
 
-/usr/bin/python3 - "$ROOT/src" "$RC" <<'PY'
+/usr/bin/python3 - "$MODULE_DIR" "$RC" <<'PY'
 from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
