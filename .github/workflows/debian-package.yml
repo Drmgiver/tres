@@ -49,6 +49,12 @@ jobs:
           dpkg-deb --info ../tres_*_all.deb
           dpkg-deb --contents ../tres_*_all.deb
           sha256sum ../tres_*_all.deb
+          mkdir -p "$RUNNER_TEMP/tres-package-check"
+          dpkg-deb --extract ../tres_*_all.deb "$RUNNER_TEMP/tres-package-check"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-config"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/menu.xml"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_layout.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_config.py"
 
       - name: Run lintian review (report findings, do not mask build errors)
         run: |
