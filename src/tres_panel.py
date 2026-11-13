@@ -121,6 +121,7 @@ class Tres:
         self._position = read_position()
         self._drag = None
         self._suppress_click = False
+        self._drag_gesture = None
         self._layout_mode = None
         self._reservation_window = None
         self._reservation_config = None
@@ -142,16 +143,20 @@ class Tres:
             btn.set_relief(Gtk.ReliefStyle.NONE)
             btn.get_style_context().add_class("tres-square")
             btn.set_tooltip_text(tooltip)
-            btn.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
-                           Gdk.EventMask.BUTTON_RELEASE_MASK |
-                           Gdk.EventMask.POINTER_MOTION_MASK)
-            btn.connect("button-press-event", self._drag_press)
-            btn.connect("motion-notify-event", self._drag_motion)
-            btn.connect("button-release-event", self._drag_release)
             btn.connect("clicked", self.open_menu, builder)
             box.pack_start(btn, False, False, 0)
             self.square_buttons.append(btn)
         self.window.add(box)
+        # Capture the gesture at the toplevel BEFORE Gtk.Button handles it.
+        # Ordinary unmodified clicks are denied by this gesture and retain
+        # their existing button callbacks.
+        self._drag_gesture = Gtk.GestureDrag.new(self.window)
+        self._drag_gesture.set_button(1)
+        self._drag_gesture.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        self._drag_gesture.connect("drag-begin", self._gesture_begin)
+        self._drag_gesture.connect("drag-update", self._gesture_update)
+        self._drag_gesture.connect("drag-end", self._gesture_end)
+        self._drag_gesture.connect("cancel", self._gesture_cancel)
         self.window.connect("size-allocate", self._on_size_allocate)
         self.window.show_all()
         self._apply_position(self._position)
@@ -285,52 +290,53 @@ class Tres:
 
     @staticmethod
     def _super_pressed(state):
-        # Wayland compositors normally expose the logo key as MOD4. SUPER_MASK
-        # is an additional keysym modifier and is not set on many systems.
         return bool(state & (Gdk.ModifierType.MOD4_MASK |
                              Gdk.ModifierType.SUPER_MASK))
 
-    def _drag_press(self, _button, event):
-        if event.button != 1 or not self._super_pressed(event.state):
-            return False
+    def _gesture_begin(self, gesture, _start_x, _start_y):
+        event = gesture.get_last_event(None)
+        if event is None or not self._super_pressed(event.state):
+            gesture.set_state(Gtk.EventSequenceState.DENIED)
+            return
         monitor = self._monitor_dimensions()
         if monitor is None:
-            return False
-        # Wayland intentionally does not expose global pointer coordinates.
-        # Use coordinates local to the pressed square instead of x_root/y_root.
-        self._drag = (float(event.x), float(event.y), False)
+            gesture.set_state(Gtk.EventSequenceState.DENIED)
+            return
+        width, height = self._panel_dimensions()
+        x, y = coordinates(self._position, width, height, *monitor)
+        self._drag = (x, y, 0.0, 0.0, False)
         self._suppress_click = False
-        return True
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
-    def _drag_motion(self, _button, event):
+    def _gesture_update(self, _gesture, offset_x, offset_y):
         if self._drag is None:
-            return False
-        start_x, start_y, moved = self._drag
-        dx, dy = float(event.x) - start_x, float(event.y) - start_y
+            return
+        initial_x, initial_y, previous_dx, previous_dy, moved = self._drag
+        # GTK reports accumulated drag offsets in local widget coordinates;
+        # unlike global coordinates, these are valid under Wayland.
+        dx, dy = float(offset_x), float(offset_y)
         if not moved and abs(dx) + abs(dy) < 3:
-            return True
+            return
         monitor = self._monitor_dimensions()
         if monitor is None:
-            return True
+            return
         width, height = self._panel_dimensions()
         current_x, current_y = coordinates(self._position, width, height, *monitor)
-        new_x = max(0, min(max(0, monitor[0] - width), round(current_x + dx)))
-        new_y = max(0, min(max(0, monitor[1] - height), round(current_y + dy)))
+        new_x = max(0, min(max(0, monitor[0] - width),
+                           round(current_x + dx - previous_dx)))
+        new_y = max(0, min(max(0, monitor[1] - height),
+                           round(current_y + dy - previous_dy)))
         if (new_x, new_y) != (current_x, current_y):
-            # The widget moves with the pointer, so subsequent event.x/y are
-            # again relative to its NEW position. Incremental deltas track
-            # motion even though Wayland doesn't expose screen coordinates.
             self._position = with_coordinates(self._position["edge"], new_x, new_y,
                                               width, height, *monitor)
             self._apply_position(self._position)
             moved = True
-        self._drag = (start_x, start_y, moved)
-        return True
+        self._drag = (initial_x, initial_y, dx, dy, moved)
 
-    def _drag_release(self, _button, event):
-        if self._drag is None or event.button != 1:
-            return False
-        moved = self._drag[2]
+    def _gesture_end(self, _gesture, _offset_x, _offset_y):
+        if self._drag is None:
+            return
+        moved = self._drag[4]
         self._drag = None
         if moved:
             self._suppress_click = True
@@ -338,7 +344,9 @@ class Tres:
                 save_position(self._position)
             except OSError as error:
                 print(f"Could not save Tres panel position: {error}", file=sys.stderr)
-        return True
+
+    def _gesture_cancel(self, _gesture, _sequence):
+        self._drag = None
 
     def _apply_mode(self, mode: str) -> None:
         if mode not in ("under", "over", "reserved"):
