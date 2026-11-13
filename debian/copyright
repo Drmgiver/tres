@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Tres for Linux
-Source: https://github.com/Drmgiver/tres-labwc
+Upstream-Name: Tres
+Source: https://github.com/Drmgiver/Tres
 
 Files: *
 Copyright: 2026 Tres for Linux contributors

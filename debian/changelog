@@ -1,6 +1,7 @@
-tres-labwc (0.1.0-1) unstable; urgency=medium
+tres (0.2.0-1) unstable; urgency=medium
 
-  * Initial Debian packaging for the standalone Wayland session.
-  * Install GTK3 panel, Labwc session launcher and basic autostart defaults.
+  * Rename desktop session and Debian package from tres-labwc to Tres.
+  * Preserve the existing GTK3/Labwc implementation.
+  * Add safe migration for existing user configuration.
 
- -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Thu, 12 Nov 2026 22:00:00 -0600
+ -- Drmgiver <40727210+Drmgiver@users.noreply.github.com>  Thu, 12 Nov 2026 22:17:00 -0600
