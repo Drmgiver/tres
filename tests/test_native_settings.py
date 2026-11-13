@@ -15,7 +15,7 @@ from tres_preferences import (DEFAULT_APPEARANCE, read_appearance, save_appearan
                               read_terminal, save_terminal)
 from tres_display import DisplayError, apply_scale, output_info, parse_output_text
 from tres_shortcuts import DEFAULT_KEYS, read_shortcuts, save_shortcuts
-from tres_open import FILE_MANAGERS, FileManagerError, file_manager_choices, open_home
+from tres_open import FILE_MANAGERS, FileManagerError, file_manager_choices, open_home, launch_fallback
 
 
 class PreferencesTests(TestCase):
@@ -375,9 +375,12 @@ class FileManagerTests(TestCase):
     @patch("tres_open.subprocess.Popen")
     @patch("tres_open.shutil.which",
            side_effect=lambda cmd: "/usr/bin/" + cmd if cmd == "thunar" else None)
-    def test_no_gio_uses_standalone_fallback(self, which, popen):
+    def test_fallback_requires_explicit_choice(self, which, popen):
         with patch.dict(sys.modules, {"gi": None}):
-            open_home()
+            with self.assertRaises(FileManagerError):
+                open_home()
+        popen.assert_not_called()
+        launch_fallback()
         self.assertEqual(popen.call_args.args[0][0], "thunar")
 
     def test_right_square_uses_default_file_manager(self):

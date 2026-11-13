@@ -71,12 +71,14 @@ square. The settings dialog now has four sections:
 - **Display:** choose an active Labwc/Wayland output and its scale (75–300%).
   Uses `wlr-randr` and preserves your existing scale block in
   `~/.config/tres/labwc/autostart`, including the original 150% laptop setup.
+  Scaling choices are retained independently for each selected monitor.
   Does **not** change another desktop session's settings or monitor resolution.
 - **Keyboard:** add or change Screenshot, Open Files and Terminal shortcuts
   using Labwc key notation such as `Print`, `W-e`, and `W-Return`.
   Edits are inserted into a **marked section only** of Tres's private
   `rc.xml`; other custom bindings are preserved. Applies using
-  `labwc --reconfigure`.
+  `labwc --reconfigure`. Suggested shortcuts appear as hints until explicitly
+  selected and saved; empty fields mean no Tres-specific binding.
 - **Default applications:** choose the file manager, browser, email, text
   editor, PDF viewer and Tres's preferred terminal. File and URL defaults
   use the standard XDG MIME system and therefore also affect other Linux
@@ -88,15 +90,17 @@ The chooser discovers installed graphical file managers from desktop-file
 categories **as well as** the normal folder-handler list. It doesn't restrict
 choices to a built-in list of executables. If two apps have the same displayed
 name, their desktop IDs are shown to distinguish them. A basic fallback is
-used only when the default file manager cannot be launched.
+offered only when the chosen file manager fails and the user agrees.
 
 Only applications with installed desktop entries can appear in the chooser;
 terminal-only tools without a desktop entry are not automatically listed.
 Changing the file-manager default also changes the user's standard XDG folder
 association in other sessions.
 
-The original Labwc **Reconfigure** and **Exit** commands remain in the
-desktop right-click menu. The three-square layout remains completely
+The desktop right-click menu also offers **Restart Tres Panel**. A small
+supervisor restarts the panel after a crash or a requested restart without
+restarting the entire session. The original Labwc **Reconfigure** and **Exit**
+commands remain in that menu. The three-square layout remains completely
 unchanged unless you explicitly choose different appearance settings.
 
 To update a script-based Tres installation without reinstalling another desktop or
@@ -109,8 +113,35 @@ bash scripts/update-panel.sh
 ```
 
 Then log out and back into Tres **once** to load the updated panel.
-The update script migrates only Tres's original solid-color wallpaper
-command, leaving any custom wallpaper and your existing display scaling alone.
+The update script recognizes and migrates old Tres launchers without
+replacing custom wallpaper, startup commands, or display scaling. To activate
+the updated portal session identity on existing manual installs, run
+`bash scripts/update-session.sh` once (requires sudo) and log out and back in.
+
+## Desktop services and audio
+
+Tres uses desktop-scoped XDG portal preferences in
+`~/.config/xdg-desktop-portal/tres-portals.conf`. The GTK portal backend
+handles file selection and ordinary desktop requests; the wlroots backend
+handles Screenshot and ScreenCast. Tres exports its Wayland socket and desktop
+identity to D-Bus-activated services. User-created portal configurations are
+**not overwritten**. Screen sharing also requires working PipeWire and
+application compatibility; virtual-display tests cannot prove every browser
+works on every GPU.
+
+The right-square audio controls use `wpctl` if available, or `pactl`
+otherwise. Unavailable controls are reported rather than silently ignored.
+The package recommends the desktop portal backends; audio clients can be
+installed independently if they are missing.
+
+## Panel recovery
+
+If the three squares disappear unexpectedly, the Tres panel supervisor
+normally restarts them while the compositor is running. You can also
+right-click an empty area of the desktop and select **Restart Tres Panel**.
+Upgrading an existing manual Tres installation preserves a copy of any
+recognized autostart file before updating its panel-launch line.
+If you customized that line manually, inspect it before changing it.
 
 ## Why Labwc?
 
@@ -145,7 +176,8 @@ bash install.sh
 
 The installer:
 - Installs `labwc`, `python3-gi`, GTK3 bindings, `wlrctl`, `foot`,
-  `swaybg`, `grim`, `slurp`, and `wlr-randr` through apt.
+  `swaybg`, `grim`, `slurp`, `wlr-randr`, and the Wayland portal
+  backends through apt.
 - Installs Tres files into `~/.local/share/tres/` and launcher
   `~/.local/bin/tres-panel`.
 - Creates a **private** `~/.config/tres/labwc/` configuration (without
@@ -346,13 +378,13 @@ and back into Tres to reload the panel.
   a broad range of Linux distributions, display managers, and GPU models**.
 - Applet menu is launchers and basic controls, not a full replacement for a
   desktop's network, Bluetooth, tray, notification, session/power, or battery
-  management services. Depending on the machine you may need to add a
-  network applet, polkit agent, portal, power service, and notification daemon.
+  management services. Some machines may still need a network applet, polkit
+  agent, power service, or notification daemon.
 - The running-window list uses `wlrctl`'s textual display, and identical
   app/title pairs cannot be uniquely distinguished. Unexpected formatting may
   require fixes after the first hardware test.
-- Wayland screen sharing / portals and some advanced GPU behaviors have not
-  been configured in this minimal prototype.
+- Wayland portal preferences are configured for Tres, but real-world
+  browser screen sharing and advanced GPU behavior still need broader testing.
 - The application menu lists `.desktop` applications visible to Gio; hidden
   or command-line-only programs are omitted.
 

@@ -7,6 +7,11 @@ if [ ! -e "${XDG_CONFIG_HOME:-$HOME/.config}/tres" ] && [ -d "$legacy" ]; then
     /usr/bin/env bash /usr/share/tres/migrate-legacy.sh
 fi
 mkdir -p "$config"
+portal_config="${XDG_CONFIG_HOME:-$HOME/.config}/xdg-desktop-portal/tres-portals.conf"
+if [ ! -e "$portal_config" ]; then
+    mkdir -p "$(dirname "$portal_config")"
+    cp /usr/share/tres/tres-portals.conf "$portal_config"
+fi
 if [ ! -e "$config/autostart" ]; then
     cp /usr/share/tres/autostart "$config/autostart"
     chmod 0755 "$config/autostart"
@@ -25,4 +30,38 @@ if [ -f "$config/autostart" ] &&
     cp -p "$config/autostart" "$config/autostart.before-tres-wallpaper"
     sed -i "s|swaybg -c '#141414'|/usr/bin/tres-wallpaper|g" "$config/autostart"
 fi
+# Upgrade recognizable Tres defaults, keeping other autostart content intact.
+# All changes are scoped to this desktop's private Labwc config.
+ /usr/bin/python3 - "$config" <<'PY'
+from pathlib import Path
+import sys
+
+directory = Path(sys.argv[1])
+autostart = directory / "autostart"
+if autostart.is_file() and not autostart.is_symlink():
+    old = autostart.read_text(encoding="utf-8")
+    updated = old.replace(
+        '/usr/bin/tres-panel >> "$HOME/.cache/tres/panel.log" 2>&1 &',
+        '/usr/bin/tres-panel-supervisor >/dev/null 2>&1 &',
+    )
+    if "tres-panel" in updated and "dbus-update-activation-environment" not in updated:
+        block = (
+            'if command -v dbus-update-activation-environment >/dev/null 2>&1; then\n'
+            '    dbus-update-activation-environment --systemd WAYLAND_DISPLAY '
+            'XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP >/dev/null 2>&1 || true\n'
+            'fi\n'
+        )
+        if updated.startswith("#!"):
+            pos = updated.find("\n") + 1
+            updated = updated[:pos] + block + updated[pos:]
+    if updated != old:
+        backup = autostart.with_name("autostart.before-tres-integration")
+        if not backup.exists():
+            backup.write_text(old, encoding="utf-8")
+        autostart.write_text(updated, encoding="utf-8")
+
+sys.path.insert(0, "/usr/share/tres")
+from tres_menu import add_restart_action
+add_restart_action(directory / "menu.xml", "/usr/bin/tres-panel-control restart")
+PY
 exec /usr/lib/tres/tres-session.sh "$@"

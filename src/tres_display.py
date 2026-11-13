@@ -1,8 +1,10 @@
 """Labwc-only output scaling, preserving the existing user autostart."""
 from __future__ import annotations
 
+import os
 import re
 import shlex
+import tempfile
 import shutil
 import subprocess
 from pathlib import Path
@@ -11,6 +13,55 @@ START = "# BEGIN TRES DISPLAY SCALE"
 END = "# END TRES DISPLAY SCALE"
 SCALE_BLOCK = re.compile(r"(?ms)^# BEGIN TRES DISPLAY SCALE\n.*?^# END TRES DISPLAY SCALE\n?")
 _NAME = re.compile(r"[a-zA-Z0-9_.:-]+\Z")
+
+_SCALE_COMMAND = re.compile(
+    r"^\(sleep 1; wlr-randr --output ([A-Za-z0-9_.:-]+) "
+    r"--scale ([0-9]+(?:\.[0-9]+)?)\)\s*(?:>/dev/null 2>&1\s*)?&$"
+)
+
+
+def saved_scales(text: str) -> dict[str, float]:
+    """Read all existing Tres output scales, refusing to discard custom lines."""
+    blocks = list(SCALE_BLOCK.finditer(text))
+    if len(blocks) > 1 or (
+        (START in text or END in text) and len(blocks) != 1
+    ):
+        raise DisplayError("Malformed or duplicate Tres scale block; left unchanged.")
+    if not blocks:
+        return {}
+    scales = {}
+    for raw in blocks[0].group().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = _SCALE_COMMAND.fullmatch(line)
+        if not match:
+            raise DisplayError("Unrecognized command in saved display block; left unchanged.")
+        scales[match.group(1)] = float(match.group(2))
+    return scales
+
+
+def persist_scales(path: Path, old: str, values: dict[str, float]) -> None:
+    lines = [START, "# Tres display scales; one command per output."]
+    for output, scale in sorted(values.items()):
+        lines.append(
+            f"(sleep 1; wlr-randr --output {shlex.quote(output)} "
+            f"--scale {shlex.quote(f'{scale:g}')}) >/dev/null 2>&1 &"
+        )
+    lines.append(END)
+    new_text = SCALE_BLOCK.sub("", old).rstrip("\n") + "\n" + "\n".join(lines) + "\n"
+    mode = path.stat().st_mode & 0o777 if path.exists() else 0o700
+    fd, temporary = tempfile.mkstemp(prefix=".autostart-tres-", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(new_text)
+        os.chmod(temporary, mode)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
 
 
 class DisplayError(RuntimeError):
@@ -98,29 +149,24 @@ def apply_scale(output: str, scale: float, autostart: Path | None = None) -> Non
         raise ValueError("Invalid display scale.") from error
     if not 0.75 <= factor <= 3.0:
         raise ValueError("Display scale must be between 0.75 and 3.")
+    path = autostart or Path.home() / ".config/tres/labwc/autostart"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    old = path.read_text(encoding="utf-8") if path.exists() else "#!/bin/sh\n"
+    if not old.startswith("#!"):
+        raise DisplayError("Unexpected autostart file format; left unchanged.")
+    values = saved_scales(old)
+    values[output] = factor
+
+    # Persist only after the compositor actually accepts the requested scale.
     if shutil.which("wlr-randr") is None:
         raise DisplayError("Install wlr-randr: sudo apt install wlr-randr")
-    normalized = f"{factor:g}"
     try:
         result = subprocess.run(
-            ["wlr-randr", "--output", output, "--scale", normalized],
+            ["wlr-randr", "--output", output, "--scale", f"{factor:g}"],
             capture_output=True, text=True, timeout=8, check=False,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
         raise DisplayError(f"Unable to set display scale: {error}") from error
     if result.returncode:
         raise DisplayError((result.stderr or "The compositor rejected the scale.").strip())
-
-    path = autostart or Path.home() / ".config/tres/labwc/autostart"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    old = path.read_text(encoding="utf-8") if path.exists() else "#!/bin/sh\n"
-    block = (f"{START}\n"
-             "# Output scaling is set for the Tres session only.\n"
-             f"(sleep 1; wlr-randr --output {shlex.quote(output)} "
-             f"--scale {shlex.quote(normalized)}) >/dev/null 2>&1 &\n"
-             f"{END}\n")
-    clean = SCALE_BLOCK.sub("", old).rstrip("\n") + "\n"
-    if not clean.startswith("#!"):
-        raise DisplayError("Unexpected autostart file format; refusing to rewrite it.")
-    path.write_text(clean + block, encoding="utf-8")
-    path.chmod(path.stat().st_mode | 0o100)
+    persist_scales(path, old, values)

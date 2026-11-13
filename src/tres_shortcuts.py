@@ -35,15 +35,15 @@ def read_shortcuts(path: Path | None = None) -> dict[str, str]:
     try:
         old = path.read_text(encoding="utf-8")
     except OSError:
-        return dict(DEFAULT_KEYS)
+        return {name: "" for name in DEFAULT_KEYS}
     match = MARKED.search(old)
     if not match:
-        return dict(DEFAULT_KEYS)
+        return {name: "" for name in DEFAULT_KEYS}
     found = {name: "" for name in DEFAULT_KEYS}
     try:
         root = ET.fromstring("<keyboard>" + match.group(0) + "</keyboard>")
     except ET.ParseError:
-        return dict(DEFAULT_KEYS)
+        return {name: "" for name in DEFAULT_KEYS}
     for bind in root.findall("./keybind"):
         action = bind.find("action")
         if action is None:

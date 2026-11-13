@@ -1,5 +1,9 @@
 #!/bin/sh
 # This file is used ONLY by Tres's private Labwc configuration.
 mkdir -p "$HOME/.cache/tres"
+# Make Wayland and desktop identity available to D-Bus activated portals.
+if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+    dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP >/dev/null 2>&1 || true
+fi
 "$HOME/.local/bin/tres-wallpaper" >/dev/null 2>&1 &
-"$HOME/.local/bin/tres-panel" >> "$HOME/.cache/tres/panel.log" 2>&1 &
+"$HOME/.local/bin/tres-panel-supervisor" >/dev/null 2>&1 &

@@ -15,18 +15,28 @@ if ! command -v apt-get >/dev/null 2>&1; then
     echo 'This installer targets apt-based Linux systems. See README for manual setup.' >&2
     exit 1
 fi
-if [[ -e "$SESSION" ]] && ! grep -q '^X-Tres=true$' "$SESSION"; then
+# Do not let the source installer overwrite a package-managed session.
+if command -v dpkg-query >/dev/null 2>&1; then
+    for owned in "$SESSION" "$SYSTEM_WRAPPER"; do
+        if dpkg-query -S "$owned" >/dev/null 2>&1; then
+            echo "Package manager owns $owned; use the package updater instead." >&2
+            exit 1
+        fi
+    done
+fi
+if [[ -e "$SESSION" ]] && ! grep -qx 'X-Tres=true' "$SESSION"; then
     echo "Refusing to replace unknown existing session: $SESSION" >&2
     exit 1
 fi
-if [[ -e "$SYSTEM_WRAPPER" ]] && ! grep -q '^# A dedicated session' "$SYSTEM_WRAPPER"; then
+if [[ -e "$SYSTEM_WRAPPER" ]] &&
+   ! grep -Eq '^# (Tres-managed session launcher|A standalone session|A dedicated session)' "$SYSTEM_WRAPPER"; then
     echo "Refusing to replace unknown launcher: $SYSTEM_WRAPPER" >&2
     exit 1
 fi
 
 printf '%s\n' 'Installing Labwc, GTK3 layer-shell, wlrctl, a terminal, and wallpaper helper.'
 sudo apt-get update
-sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr
+sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr
 
 # Copy the previous Tres configuration, if any, without deleting the old one.
 if [[ -d "$HOME/.config/tres-labwc" && ! -e "$HOME/.config/tres" ]]; then
@@ -40,18 +50,21 @@ install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
 install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
-for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal; do
+for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu; do
     install -m 0644 "$ROOT/src/$module.py" "$DEST/$module.py"
 done
 bash "$ROOT/scripts/install-screenshot.sh"
 bash "$ROOT/scripts/install-settings.sh"
+bash "$ROOT/scripts/install-portals.sh"
 cat > "$BIN/tres-panel" <<'EOF'
 #!/bin/sh
+# Tres-managed launcher
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_panel.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-panel"
 cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
+# Tres-managed launcher
 # Tres stacking configuration launcher.
 exec /usr/bin/python3 "$HOME/.local/share/tres/tres_config.py" "$@"
 EOF
@@ -66,6 +79,8 @@ if [[ ! -e "$CFG/autostart" ]]; then
 else
     echo "Keeping existing $CFG/autostart"
 fi
+
+bash "$ROOT/scripts/install-panel-recovery.sh"
 
 sudo install -m 0755 "$ROOT/scripts/tres-session.sh" "$SYSTEM_WRAPPER"
 tmpfile="$(mktemp)"
