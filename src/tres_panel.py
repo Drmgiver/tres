@@ -184,6 +184,9 @@ class Tres:
         if self._box.get_orientation() != orientation:
             self._box.set_orientation(orientation)
             self._box.queue_resize()
+            # Tell GTK/Wayland to recalculate the surface geometry instead of
+            # retaining the wide allocation after switching to a side edge.
+            self.window.resize(*panel_size(self._appearance["square_size"], edge))
 
     def _reserve_work_area(self, position, x, y, width, height, monitor):
         # The panel is a freely positioned TOP-layer window. Reserving space
