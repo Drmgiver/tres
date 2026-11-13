@@ -33,3 +33,6 @@ packaging/deb/tres-synaptic usr/bin
 packaging/deb/tres-panel-supervisor usr/bin
 packaging/deb/tres-panel-control usr/bin
 scripts/tres-polkit-agent.sh usr/lib/tres
+src/tres_search.py usr/share/tres
+src/tres_applications.py usr/share/tres
+packaging/deb/tres-search usr/bin
