@@ -76,6 +76,49 @@ first setup or when dependencies/session installation change. The installer
 preserves an existing Tres autostart file, so user customizations won't be
 overwritten.
 
+## Standalone black screen on AMD/NVIDIA hybrid laptops
+
+The built-in screen can be attached to AMD even when an NVIDIA GPU is also
+present. When the Labwc login is black but nested Labwc works, inspect the
+compositor log and try selecting the AMD DRM card **for Tres only**.
+
+From the existing repository checkout in a working COSMIC login:
+
+```bash
+git pull --ff-only
+bash scripts/update-session.sh
+bash scripts/try-amd-gpu.sh
+```
+
+The first command pulls the fix; the second updates only the Tres login
+wrapper (one sudo file install, no apt), and the third verifies that the
+known PCI device `0000:65:00.0` is using `amdgpu` before storing a
+per-user preference. **This PCI address is specific to the original test
+laptop; do not use the AMD helper blindly on other computers.**
+
+Now save your work, log out and try **Tres (Labwc)** again. If the screen
+goes black, reboot into COSMIC and collect:
+
+```bash
+bash scripts/diagnose-standalone.sh
+```
+
+The launcher keeps Labwc's `-d` debug output in
+`~/.cache/tres-labwc/labwc-standalone.log`, including across a failed login.
+The diagnostic prioritizes that log and connected DRM outputs instead of
+filling the report with unrelated NVIDIA X11 mode lines. Review log
+contents for private identifiers before sharing.
+
+To **undo** the Tres-only GPU choice:
+
+```bash
+bash scripts/clear-gpu-override.sh
+```
+
+This does not modify GPU drivers, system-wide configurations, or COSMIC.
+The AMD selection is an investigation, not proof of the cause; a failed
+attempt should be followed by review of the debug log.
+
 ## Shortcuts & recovery
 
 Labwc default keyboard shortcuts remain available (we don't override `rc.xml`):
