@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Opt in to the AMD GPU only for the Tres standalone login. This does not
-# modify Pop!_OS, NVIDIA drivers, COSMIC, or any global GPU configuration.
+# modify distribution settings, GPU drivers, or global GPU configuration.
 set -euo pipefail
 pci="0000:65:00.0"
 path="/dev/dri/by-path/pci-${pci}-card"
