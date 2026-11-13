@@ -33,4 +33,4 @@ if text == template:
     raise SystemExit("Screenshot launcher template is missing Exec=tres-screenshot")
 destination.write_text(text, encoding="utf-8")
 PY
-echo 'Tres Screenshot added to Accessories (keep Ubuntu Screenshot installed).'
+echo 'Tres Screenshot added to Accessories.'
