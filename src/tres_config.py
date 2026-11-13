@@ -208,7 +208,9 @@ def main() -> None:
     keyboard.pack_start(label(
         "Labwc notation: W=Super, A=Alt, C=Ctrl, S=Shift. "
         "Examples: Print, W-e, W-Return. Clear a field to disable its "
-        "Tres shortcut. Existing non-Tres keybindings are preserved.", True
+        "Tres shortcut. Blank means no Tres binding is installed. "
+        "Suggestions are not applied until you save. Existing custom "
+        "keybindings are preserved.", True
     ), False, False, 0)
     current_keys = read_shortcuts()
     inputs = {}
@@ -216,9 +218,16 @@ def main() -> None:
                           ("files", "Open files"),
                           ("terminal", "Terminal")):
         field = Gtk.Entry()
-        field.set_text(current_keys.get(name, DEFAULT_KEYS[name]))
+        field.set_text(current_keys.get(name, ""))
+        field.set_placeholder_text("Suggested: " + DEFAULT_KEYS[name])
         inputs[name] = field
         keyboard.pack_start(row(label(heading + ":"), field), False, False, 0)
+
+    suggested = Gtk.Button(label="Use suggested shortcuts")
+    suggested.connect("clicked", lambda _button: [
+        inputs[name].set_text(value) for name, value in DEFAULT_KEYS.items()
+    ])
+    keyboard.pack_start(suggested, False, False, 0)
 
     def save_keys(_button):
         def action():
