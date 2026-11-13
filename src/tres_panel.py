@@ -322,9 +322,12 @@ class Tres:
     def _apply_mode(self, mode: str) -> None:
         if mode not in ("under", "over", "reserved"):
             raise ValueError(f"Unknown Tres stacking mode: {mode}")
-        # The visible, draggable squares never reserve space by themselves.
-        # A separate, properly edge-anchored surface manages the reservation.
-        GtkLayerShell.set_exclusive_zone(self.window, 0)
+        # Keep the visible squares pinned to their physical screen position.
+        # An exclusive zone of 0 makes layer-shell move the panel OUT of a
+        # reserved region, producing the user-visible downward jump. -1 means
+        # ignore reservations from other surfaces; our separate edge-anchored
+        # surface still reserves the work area for normal windows.
+        GtkLayerShell.set_exclusive_zone(self.window, -1)
         GtkLayerShell.set_layer(
             self.window,
             GtkLayerShell.Layer.BOTTOM if mode == "under"
