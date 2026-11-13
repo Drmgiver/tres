@@ -54,6 +54,14 @@ if autostart.is_file() and not autostart.is_symlink():
         if updated.startswith("#!"):
             pos = updated.find("\n") + 1
             updated = updated[:pos] + block + updated[pos:]
+    # Add authentication to older package-managed Tres autostarts without
+    # replacing user-added commands, wallpaper choices, or output scaling.
+    if "tres-polkit-agent" not in updated:
+        updated += (
+            '\n# Tres graphical administrator authentication\n'
+            '/bin/sh /usr/lib/tres/tres-polkit-agent.sh '
+            '>> "$HOME/.cache/tres/polkit.log" 2>&1 &\n'
+        )
     if updated != old:
         backup = autostart.with_name("autostart.before-tres-integration")
         if not backup.exists():
