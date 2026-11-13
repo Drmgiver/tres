@@ -26,10 +26,9 @@ supports **Entire screen** and **Select an area** with an optional 0, 3, or
 for area selection; it does not require a desktop-specific screenshot portal.
 Press Escape while selecting an area to return to the dialog.
 
-The screenshot app is separate from existing Ubuntu screenshot tools. Tres
-leaves those installed and gives its own launcher a distinct name. The
-source installer and update script install the user-local launcher without
-sudo. The `.deb` includes the application and the Grim/Slurp dependencies.
+Tres Screenshot is installed alongside other screenshot utilities without
+removing or changing them. It has its own application launcher. The source
+installer and update script install that launcher without sudo. The `.deb` includes the application and the Grim/Slurp dependencies.
 
 ```bash
 cd ~/Tres
