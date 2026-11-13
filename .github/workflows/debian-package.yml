@@ -38,8 +38,8 @@ jobs:
           srcdir="${GITHUB_REPOSITORY#*/}"
           cd ..
           tar --exclude-vcs --exclude="$srcdir/debian" \
-            --transform="s|^$srcdir|tres-0.4.1|" \
-            -czf tres_0.4.1.orig.tar.gz "$srcdir"
+            --transform="s|^$srcdir|tres-0.5.0|" \
+            -czf tres_0.5.0.orig.tar.gz "$srcdir"
 
       - name: Build installable binary package
         run: dpkg-buildpackage --build=binary --no-sign
@@ -59,6 +59,13 @@ jobs:
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_capture.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_screenshot.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/applications/tres-screenshot.desktop"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_preferences.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_display.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_shortcuts.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_open.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_wallpaper.py"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-open-files"
+          test -x "$RUNNER_TEMP/tres-package-check/usr/bin/tres-wallpaper"
 
       - name: Run lintian review (report findings, do not mask build errors)
         run: |
