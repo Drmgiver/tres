@@ -66,6 +66,7 @@ jobs:
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_preferences.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_display.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_shortcuts.py"
+          test -f "$RUNNER_TEMP/tres-package-check/usr/lib/tres/install-search-shortcut.sh"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_open.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_wallpaper.py"
           test -f "$RUNNER_TEMP/tres-package-check/usr/share/tres/tres_terminal.py"
