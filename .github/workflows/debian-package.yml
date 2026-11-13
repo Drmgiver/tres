@@ -55,15 +55,16 @@ jobs:
       - name: Build unsigned source package for review
         run: dpkg-buildpackage --build=source --no-sign
 
+      - name: Stage package artifacts inside the workspace
+        run: |
+          mkdir -p dist
+          cp ../tres-labwc_*.deb ../tres-labwc_*.dsc \
+            ../tres-labwc_*.debian.tar.* ../tres-labwc_*.orig.tar.* \
+            ../tres-labwc_*.changes ../lintian-report.txt dist/
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tres-labwc-debian-packages
-          path: |
-            ../tres-labwc_*.deb
-            ../tres-labwc_*.dsc
-            ../tres-labwc_*.debian.tar.*
-            ../tres-labwc_*.orig.tar.*
-            ../tres-labwc_*.changes
-            ../lintian-report.txt
+          path: dist/
           if-no-files-found: error
