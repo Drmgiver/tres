@@ -16,7 +16,7 @@ The `Architecture: all` Debian package installs an optional
 packages Labwc, GTK3 layer-shell bindings, `wlrctl`, Python GI, `foot`,
 and `swaybg`.
 
-To test a build on Ubuntu/Pop!_OS **on a spare/test machine first**:
+To test a build on an apt-based Linux system **on a spare/test machine first**:
 
 ```bash
 sudo apt install ./tres_0.5.0-1_all.deb
@@ -58,7 +58,7 @@ configuration exists.
 
 The Debian control file declares **Breaks/Replaces** for the old
 `tres-labwc` package. APT may remove the old experimental package when
-installing `tres`. Keep your old source checkout and COSMIC or other
+installing `tres`. Keep your old source checkout and another
 desktop session available until you have tested the renamed Tres session.
 
 **Legacy shell installers:** the renamed project installs a new login
@@ -130,6 +130,6 @@ Official documentation:
 ## Packaging scope
 
 The Debian package deliberately does **not** install a new default display
-manager, replace COSMIC/GNOME, auto-select a GPU, or configure a screen locker.
+manager, replace an existing desktop environment, auto-select a GPU, or configure a screen locker.
 The first-run session copies a minimal autostart file into the user's private
 Tres configuration if absent. Existing user configuration is left untouched.
