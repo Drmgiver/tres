@@ -13,7 +13,10 @@ Three **blank, 19×19 white squares** centered 3px below the top of the display:
 2. **Middle:** running windows; select one to activate it.
 3. **Right:** clock, battery, audio, network/settings launchers and log out.
 
-No permanent taskbar, dock, full-width panel, or reserved screen space.
+No permanent taskbar, dock, or full-width panel. Tres reserves only a
+tiny top-edge strip (the controls' height plus the 3px margin), so maximized
+windows start just below the white squares. Fullscreen applications may still
+cover them as expected.
 
 ## Why Labwc?
 
@@ -184,6 +187,21 @@ bash uninstall.sh
 
 This removes the Tres login entry and installed panel. Your custom Tres
 configuration and apt dependencies are left in place; **COSMIC is unchanged**.
+
+## Maximized versus fullscreen windows
+
+Maximized windows should avoid Tres's three-square controls automatically.
+The GTK layer-shell surface requests a narrow **exclusive zone** and Labwc
+adjusts maximized window geometry accordingly. This keeps all three controls
+available without creating a normal desktop panel. The zone grows naturally
+with the panel's size and your Wayland display scaling.
+
+**True fullscreen** applications intentionally occupy the entire display and
+may cover the squares. This is not the same as maximizing. A manually dragged
+window can also be placed over the strip.
+
+After pulling this fix, run `bash scripts/update-panel.sh`, then log out
+and back into Tres. Test by maximizing a terminal window.
 
 ## Known limitations
 
