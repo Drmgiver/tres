@@ -12,6 +12,9 @@ from pathlib import Path
 
 def setup_gi():
     import gi
+    # Explicitly pin GDK before importing any gi.repository symbols. On
+    # installations with GTK 4, the implicit default otherwise loads GDK 4.
+    gi.require_version("Gdk", "3.0")
     gi.require_version("Gtk", "3.0")
     gi.require_version("GtkLayerShell", "0.1")
     from gi.repository import Gdk, Gio, Gtk, GtkLayerShell
