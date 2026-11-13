@@ -216,7 +216,8 @@ def main() -> None:
     inputs = {}
     for name, heading in (("screenshot", "Screenshot"),
                           ("files", "Open files"),
-                          ("terminal", "Terminal")):
+                          ("terminal", "Terminal"),
+                          ("search", "Search applications")):
         field = Gtk.Entry()
         field.set_text(current_keys.get(name, ""))
         field.set_placeholder_text("Suggested: " + DEFAULT_KEYS[name])
