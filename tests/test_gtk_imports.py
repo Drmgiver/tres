@@ -1,4 +1,4 @@
-"""Protect the GTK3 bootstrap from accidentally selecting GDK4 on COSMIC."""
+"""Protect the GTK3 bootstrap from accidentally selecting GDK4."""
 import ast
 import pathlib
 import sys
