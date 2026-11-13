@@ -244,6 +244,11 @@ def main() -> None:
     for caption, mime in MIME_CHOICES:
         chooser = Gtk.ComboBoxText()
         available = {}
+        existing = Gio.AppInfo.get_default_for_type(mime, False)
+        if mime == "inode/directory" and existing and _is_cosmic(existing):
+            chooser.append("__keep__", "Current: COSMIC Files (choose another)")
+        else:
+            chooser.append("__keep__", "Leave unchanged")
         for app in Gio.AppInfo.get_all_for_type(mime):
             app_id = app.get_id()
             if mime == "inode/directory" and _is_cosmic(app):
@@ -251,7 +256,6 @@ def main() -> None:
                 continue
             if app_id and app_id not in available:
                 available[app_id] = app
-        existing = Gio.AppInfo.get_default_for_type(mime, False)
         if existing and existing.get_id() and not (
             mime == "inode/directory" and _is_cosmic(existing)
         ):
@@ -261,10 +265,8 @@ def main() -> None:
             chooser.append(app_id, app.get_name())
         if existing and existing.get_id() in available:
             chooser.set_active_id(existing.get_id())
-        elif available:
-            chooser.set_active(0)
         else:
-            chooser.set_sensitive(False)
+            chooser.set_active_id("__keep__")
         combos[mime] = chooser
         initial[mime] = existing.get_id() if existing else None
         handlers[mime] = available
@@ -291,7 +293,7 @@ def main() -> None:
             errors = []
             for caption, mime in MIME_CHOICES:
                 app_id = combos[mime].get_active_id()
-                if not app_id or app_id == initial[mime]:
+                if not app_id or app_id == "__keep__" or app_id == initial[mime]:
                     continue
                 try:
                     # A web browser default needs both schemes and HTML,
