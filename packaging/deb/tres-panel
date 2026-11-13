@@ -1,0 +1,3 @@
+#!/bin/sh
+# Package-managed launcher; private modules live next to the panel.
+exec /usr/bin/python3 /usr/share/tres-labwc/tres_panel.py "$@"
