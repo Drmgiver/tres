@@ -14,9 +14,9 @@ BEGIN = "<!-- BEGIN TRES SHORTCUTS -->"
 END = "<!-- END TRES SHORTCUTS -->"
 MARKED = re.compile(r"(?s)<!-- BEGIN TRES SHORTCUTS -->.*?<!-- END TRES SHORTCUTS -->")
 KEY_PATTERN = re.compile(r"(?:(?:W|A|C|S)-)*[A-Za-z0-9_]+\Z")
-DEFAULT_KEYS = {"screenshot": "Print", "files": "W-e", "terminal": "W-Return"}
+DEFAULT_KEYS = {"screenshot": "Print", "files": "W-e", "terminal": "W-Return", "search": "W-space"}
 COMMANDS = {"screenshot": "tres-screenshot", "files": "tres-open-files",
-            "terminal": "tres-open-terminal"}
+            "terminal": "tres-open-terminal", "search": "tres-search"}
 
 
 def rc_path() -> Path:
@@ -57,7 +57,7 @@ def read_shortcuts(path: Path | None = None) -> dict[str, str]:
 
 def save_shortcuts(keys: dict[str, str], path: Path | None = None) -> None:
     if set(keys) != set(DEFAULT_KEYS):
-        raise ValueError("Expected Screenshot, Files, and Terminal shortcuts.")
+        raise ValueError("Expected Screenshot, Files, Terminal, and Search shortcuts.")
     values = [val for val in keys.values() if val]
     if any(not KEY_PATTERN.fullmatch(value) for value in values):
         raise ValueError("Use Labwc key names like Print, W-e, or W-Return.")
