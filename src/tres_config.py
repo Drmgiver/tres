@@ -142,11 +142,18 @@ def main() -> None:
     fine_y = Gtk.SpinButton.new_with_range(-20000, 20000, 1)
     fine_x.set_value(placement["x"])
     fine_y.set_value(placement["y"])
+    # Switching sides should start from that side's centered default, not
+    # carry a potentially huge offset inherited from the previous edge.
+    def reset_edge_offsets(_combo):
+        fine_x.set_value(0)
+        fine_y.set_value(0)
+    edge.connect("changed", reset_edge_offsets)
     appearance.pack_start(row(label("Side:"), edge), False, False, 0)
     appearance.pack_start(row(label("Fine offset X (px):"), fine_x,
                               label("Y (px):"), fine_y), False, False, 0)
     appearance.pack_start(label(
-        "Defaults center the middle square on the selected edge. "
+        "Top/bottom use a horizontal row; left/right use a vertical stack. "
+        "The middle square is centered on the chosen edge. "
         "Super + left-click and drag any square to fine-tune its position; "
         "the panel remembers its location.", True
     ), False, False, 0)
