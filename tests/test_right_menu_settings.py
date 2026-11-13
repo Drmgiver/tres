@@ -48,6 +48,7 @@ class TestRightMenuSettings(unittest.TestCase):
             "Gtk": fake_gtk,
             "datetime": datetime,
             "battery_label": lambda: "Battery: 75%",
+            "volume_label": lambda: "Volume: 40%",
             "shutil": SimpleNamespace(which=lambda _: None),
             "spawn_first": mock_spawn,
             "audio_backend": lambda: "pactl",
