@@ -63,7 +63,11 @@ fi
 output="$root/dist/ppa/$series"
 mkdir -p "$output"
 cp "$tmp/tres_1.0.0.orig.tar.gz" "$output/"
-cp "$tmp/tres_${version}.dsc" "$tmp/tres_${version}.debian.tar."* "$tmp/tres_${version}_source.changes" "$output/"
+cp "$tmp/tres_${version}.dsc" "$tmp/tres_${version}.debian.tar."* "$tmp/tres_${version}_source.changes" "$tmp/tres_${version}_source.buildinfo" "$output/"
+# Fail before suggesting upload if any artifact referenced by .changes is missing.
+for artifact in $(sed -n '/^Files:/,/^[^ ]/p' "$output/tres_${version}_source.changes" | awk '/^ [a-f0-9]{32} / {print $5}'); do
+  test -s "$output/$artifact" || { echo "Missing source upload artifact: $artifact" >&2; exit 1; }
+done
 echo "Source upload prepared: $output/tres_${version}_source.changes"
 if [[ $mode == --unsigned ]]; then
   echo "UNSIGNED review artifact only; this cannot be uploaded to Launchpad."
