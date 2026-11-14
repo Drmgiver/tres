@@ -147,6 +147,21 @@ bash scripts/build-ppa-source.sh stonking
 dput ppa:drmgiver/tres dist/ppa/stonking/tres_1.0.0-1~ppa1~ubuntu26.10.1_source.changes
 ```
 
+For Ubuntu 27.04 (Tenacious T-Rex; **development release until April 2027**),
+prepare and sign a separate package without rebuilding the upstream archive.
+There is no need to wait for 26.10's Launchpad build to finish:
+
+```bash
+cd ~/Tres
+git pull --ff-only
+bash scripts/build-ppa-source.sh tenacious
+dput ppa:drmgiver/tres dist/ppa/tenacious/tres_1.0.0-1~ppa1~ubuntu27.04.1_source.changes
+```
+
+Check Launchpad acceptance, build result, and publication. Treat Tenacious
+as pre-release support until tested against the final April 2027 release.
+This does not upload the immutable upstream source archive again.
+
 The original source archive from Noble must remain in
 `dist/ppa/noble/tres_1.0.0.orig.tar.gz` for the signed upload to work.
 Launchpad builds the 26.10 binary separately. Verify acceptance, build
