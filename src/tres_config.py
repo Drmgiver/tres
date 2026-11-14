@@ -154,8 +154,7 @@ def main() -> None:
     appearance.pack_start(label(
         "Top/bottom use a horizontal row; left/right use a vertical stack. "
         "The middle square is centered on the chosen edge. "
-        "Super + left-click and drag any square to fine-tune its position; "
-        "the panel remembers its location.", True
+        "Fine-tune placement using X and Y offsets, then Apply appearance.", True
     ), False, False, 0)
 
     def reset_position(_button):
