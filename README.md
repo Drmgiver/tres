@@ -10,7 +10,7 @@ recreation—not the original theme's source code. **Tres is independent of and
 unrelated to Trinity Desktop Environment (TDE).**
 
 **Project:** [GitHub source and releases](https://github.com/Drmgiver/tres) ·
-[Desktop homepage](https://drmgiver.github.io/tres/) (requires GitHub Pages to be enabled) ·
+[Desktop homepage](https://drmgiver.github.io/tres/) ·
 [Installation instructions](#installation-apt-based-linux-distributions)
 
 ```
