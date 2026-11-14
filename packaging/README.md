@@ -254,17 +254,17 @@ https://mentors.debian.net/intro-maintainers/.
 
 ### Upstream release tracking
 
-The `debian/watch` file uses Debian watch format 5 with an explicit
-`Untrackable` explanation **until an actual versioned upstream tag exists**.
-The initial 1.0.0 upstream archive was frozen for the Noble PPA before tags
-were created, and current GitHub `main` is not that original archive.
-Do not retroactively tag current `main` as `v1.0.0`.
+The initial 1.0.0 upstream archive was frozen for the Noble PPA before
+GitHub release tags existed. The current `main` source is not identical
+to that original archive, so a retroactive `v1.0.0` tag on current
+`main` would be misleading.
 
-When a future real upstream version is published with a version tag,
-remove `Untrackable` from `debian/watch`, run
-`uscan --no-download --verbose`, and verify that the version and
-downloaded archive correspond to the release. The Debian unstable CI
-checks the current watch state with `uscan`.
+There is currently **no `debian/watch` file**, because no discoverable
+upstream release tags or download assets exist for `uscan` to track.
+The missing watch-file informational notice is preferable to a false
+nonfunctional tracker. After publishing the next genuine upstream
+release with an immutable version tag, introduce a Debian watch-format-5
+GitHub template and verify it using `uscan --no-download --verbose`.
 
 ## Getting into Debian and Ubuntu
 
