@@ -190,15 +190,76 @@ sudo apt install tres
 
 Keep another desktop session installed while testing Tres.
 
+## Debian Mentors upload (ITP #1153994)
+
+Debian's Intent to Package is filed as
+[WNPP #1153994](https://bugs.debian.org/1153994).
+The package's Debian source version is `1.0.0-1`, targeted to `unstable`.
+**Do not submit the Ubuntu PPA source upload to Debian Mentors.**
+
+The initial Debian upload uses the **same original upstream 1.0.0 source
+archive** already used for Noble PPA publication. The script copies the
+current `debian/` packaging into a temporary build directory and prepares
+a separate source-only upload. It does not modify the current Git checkout
+or replace the user's installed Tres session.
+
+Install Debian packaging and upload tools on the maintainer's Linux laptop:
+
+```bash
+sudo apt update
+sudo apt install build-essential debhelper dh-python dpkg-dev devscripts dput lintian
+```
+
+After confirming the current `debian/` package passes GitHub's
+**Debian unstable package review** workflow:
+
+```bash
+cd ~/Tres
+git pull --ff-only
+bash scripts/build-debian-source.sh
+```
+
+The script requires the existing **exact** original tarball at
+`~/Tres/dist/ppa/noble/tres_1.0.0.orig.tar.gz`, and the maintainer's local
+OpenPGP signing key. It creates signed source files in `dist/debian/`,
+including `tres_1.0.0-1_source.changes`. The user's GPG private key stays
+on their own laptop. Never upload that private key.
+
+Before the first upload, ensure the Debian Mentors account has the
+**matching public signing key**, and add this HTTPS upload stanza to
+`~/.dput.cf` **without replacing existing unrelated entries**:
+
+```ini
+[mentors]
+fqdn = mentors.debian.net
+incoming = /upload
+method = https
+allow_unsigned_uploads = 0
+progress_indicator = 2
+allowed_distributions = .*
+```
+
+Then, **after reviewing the signed package**:
+
+```bash
+cd ~/Tres
+dput mentors dist/debian/tres_1.0.0-1_source.changes
+```
+
+Wait for the Debian Mentors import confirmation and verify the Tres entry
+on your Mentors account/package page. A successful `dput` only confirms
+transfer, not Debian archive acceptance. The Mentors site then provides
+the RFS template for the next step. Official instructions:
+https://mentors.debian.net/intro-maintainers/.
+
 ## Getting into Debian and Ubuntu
 
 **For public availability now: publish the PPA first, then submit to Debian.**
 
 1. Confirm the package name is available, select an actual, reachable
    maintainer email address, verify the GPL copyright notices and release
-   version, and run a clean build/lintian check. The current GitHub
-   `users.noreply` address is **provisional** and must be replaced before
-   applying for maintainership/sponsorship.
+   version, and run a clean build/lintian check. The maintainer is
+   J. Michael Willenburg <drmgiver@gmail.com>.
 2. File an Intent to Package (ITP) in Debian's WNPP bug tracker.
 3. Build the source package in a Debian unstable/sid clean environment
    (prefer `sbuild`), sign it with the maintainer's OpenPGP key, and
