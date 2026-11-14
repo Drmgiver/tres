@@ -22,8 +22,11 @@ class MouseBindingTests(unittest.TestCase):
             frame = next(x for x in contexts if x.get("name") == "Frame")
             binds = {(b.get("button"), b.get("action")): b
                      for b in frame.findall("mousebind")}
-            self.assertFalse(list(binds[("W-Left", "Drag")]))
-            self.assertFalse(list(binds[("W-Left", "Press")]))
+            self.assertNotIn(("W-Left", "Drag"), binds)
+            self.assertNotIn(("W-Left", "Press"), binds)
+            self.assertIsNone(root.find("./mouse/default"))
+            self.assertIsNotNone(root.find("./keyboard/default"))
+            self.assertIsNotNone(root.find("./mouse/context[@name='Root']"))
             self.assertEqual(binds[("A-Left", "Drag")].find("action").get("name"), "Move")
             self.assertEqual(rc.read_text().count("BEGIN TRES PANEL DRAG"), 1)
 
@@ -50,8 +53,35 @@ class MouseBindingTests(unittest.TestCase):
                         '<action name="Custom"/></mousebind>'
                         '</context></mouse></labwc_config>')
                 rc.write_text(data)
-                self.assertEqual(configure(rc), "skip-custom-mousebind")
+                self.assertEqual(configure(rc), "skip-custom-mouse-config")
                 self.assertEqual(rc.read_text(), data)
+
+    def test_upgrade_migrates_old_empty_frame_bindings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            rc = Path(tmp) / "rc.xml"
+            rc.write_text(
+                '<labwc_config><mouse><default/>'
+                '<!-- BEGIN TRES PANEL DRAG -->'
+                '<context name="Frame">'
+                '<mousebind button="W-Left" action="Press" />'
+                '<mousebind button="W-Left" action="Drag" />'
+                '<mousebind button="A-Left" action="Drag"><action name="Move" /></mousebind>'
+                '</context>'
+                '<!-- END TRES PANEL DRAG -->'
+                '</mouse></labwc_config>'
+            )
+            self.assertEqual(configure(rc), "upgraded")
+            xml = ET.parse(rc).getroot()
+            self.assertIsNone(xml.find("./mouse/default"))
+            self.assertEqual(configure(rc), "already-installed")
+            frame_binds = [
+                node for context in xml.findall("./mouse/context")
+                if context.get("name") == "Frame"
+                for node in context.findall("mousebind")
+            ]
+            self.assertTrue(any(node.get("button") == "A-Left" for node in frame_binds))
+            self.assertFalse(any(node.get("button") == "W-Left" for node in frame_binds))
+            self.assertEqual(rc.read_text().count("BEGIN TRES PANEL DRAG"), 1)
 
     def test_safeguards_custom_symlink_and_invalid_xml(self):
         with tempfile.TemporaryDirectory() as tmp:
