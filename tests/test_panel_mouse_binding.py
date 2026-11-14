@@ -19,9 +19,9 @@ class MouseBindingTests(unittest.TestCase):
             self.assertEqual(configure(rc), "already-installed")
             root = ET.parse(rc).getroot()
             contexts = root.findall("./mouse/context")
-            frame = next(x for x in contexts if x.get("name") == "Frame")
+            frames = [x for x in contexts if x.get("name") == "Frame"]
             binds = {(b.get("button"), b.get("action")): b
-                     for b in frame.findall("mousebind")}
+                     for frame in frames for b in frame.findall("mousebind")}
             self.assertNotIn(("W-Left", "Drag"), binds)
             self.assertNotIn(("W-Left", "Press"), binds)
             self.assertIsNone(root.find("./mouse/default"))
