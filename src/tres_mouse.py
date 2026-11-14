@@ -1,8 +1,9 @@
-"""Tres-only Labwc mouse bindings for Super+drag on the layer-shell panel.
+"""Tres-only Labwc mouse configuration without swallowing Super+left.
 
-Labwc's default Frame W-Left bindings consume Super+left mouse events before
-GTK can receive them. Free those bindings in Tres only, moving ordinary-window
-dragging to Alt+left. Never overwrite a user's explicit mouse bindings.
+Labwc's Frame context consumes pointer events even for empty bindings. To
+deliver Super+left to our GTK layer-shell panel, it must be absent entirely.
+Therefore we explicitly materialize the stock non-Super-left mouse bindings
+instead of using <mouse><default />, which reinstalls the intercepted event.
 """
 from __future__ import annotations
 
@@ -15,21 +16,86 @@ import xml.etree.ElementTree as ET
 BEGIN = "<!-- BEGIN TRES PANEL DRAG -->"
 END = "<!-- END TRES PANEL DRAG -->"
 MARKED = re.compile(re.escape(BEGIN) + r".*?" + re.escape(END), re.DOTALL)
+MOUSE = re.compile(r"<mouse(?:\s+[^>]*)?>.*?</mouse\s*>", re.DOTALL)
+MOUSE_DEFAULT = re.compile(r"<default\s*/>")
 
-BLOCK = """<!-- BEGIN TRES PANEL DRAG -->
-    <context name="Frame">
-      <!-- Forward Super+Left to Tres's GTK layer-shell drag gesture. -->
-      <mousebind button="W-Left" action="Press" />
-      <mousebind button="W-Left" action="Drag" />
-      <!-- Preserve compositor window dragging with Alt+Left instead. -->
-      <mousebind button="A-Left" action="Press">
-        <action name="Focus" />
-        <action name="Raise" />
-      </mousebind>
-      <mousebind button="A-Left" action="Drag">
-        <action name="Move" />
-      </mousebind>
-    </context>
+# Explicit stock Labwc mouse behavior, minus Frame/W-Left.
+# Original reference: https://github.com/labwc/labwc/blob/master/docs/rc.xml.all
+# Users can still add their own additional contexts after these defaults.
+DEFAULT_BINDINGS = {
+    "Frame": [
+        ("W-Right", "Press", "Focus", "Raise"),
+        ("W-Right", "Drag", "Resize"),
+    ],
+    "Border": [("Left", "Press", "Focus", "Raise"),
+               ("Left", "Drag", "Resize")],
+    "TitleBar": [("Left", "Press", "Focus", "Raise"),
+                 ("Right", "Click", "Focus", "Raise"),
+                 ("Up", "Scroll", "Unshade", "Focus"),
+                 ("Down", "Scroll", "Unfocus", "Shade")],
+    "Title": [("Left", "Drag", "Move"),
+              ("Left", "DoubleClick", "ToggleMaximize"),
+              ("Right", "Click", "ShowMenu")],
+    "Maximize": [("Left", "Click", "ToggleMaximize"),
+                 ("Right", "Click", "ToggleMaximize"),
+                 ("Middle", "Click", "ToggleMaximize")],
+    "WindowMenu": [("Left", "Click", "ShowMenu"),
+                   ("Right", "Click", "ShowMenu")],
+    "Icon": [("Left", "Click", "ShowMenu"),
+             ("Right", "Click", "ShowMenu")],
+    "Shade": [("Left", "Click", "ToggleShade")],
+    "AllDesktops": [("Left", "Click", "ToggleOmnipresent")],
+    "Iconify": [("Left", "Click", "Iconify")],
+    "Close": [("Left", "Click", "Close")],
+    "Client": [("Left", "Press", "Focus", "Raise"),
+               ("Middle", "Press", "Focus", "Raise"),
+               ("Right", "Press", "Focus", "Raise")],
+    "Root": [("Left", "Press", "ShowMenu"),
+             ("Right", "Press", "ShowMenu"),
+             ("Middle", "Press", "ShowMenu"),
+             ("Up", "Scroll", "GoToDesktop"),
+             ("Down", "Scroll", "GoToDesktop")],
+}
+
+
+def default_xml() -> str:
+    """Keep standard window, decoration and desktop mouse gestures intact."""
+    lines = ["<!-- BEGIN TRES DEFAULT MOUSE WITHOUT SUPER-LEFT -->"]
+    for context, bindings in DEFAULT_BINDINGS.items():
+        lines.append(f'<context name="{context}">')
+        for button, event, *actions in bindings:
+            attr = "direction" if event == "Scroll" else "button"
+            lines.append(f'<mousebind {attr}="{button}" action="{event}">')
+            for action in actions:
+                attrs = ""
+                if action == "ShowMenu":
+                    attrs = (' menu="root-menu"' if context == "Root"
+                             else ' menu="client-menu"')
+                elif action == "GoToDesktop":
+                    attrs = ' to="left" wrap="yes"' if button == "Up" else ' to="right" wrap="yes"'
+                elif action == "ToggleMaximize" and context == "Maximize":
+                    attrs = (' direction="horizontal"' if button == "Right" else
+                             ' direction="vertical"' if button == "Middle" else "")
+                if action == "ShowMenu" and context in ("WindowMenu", "Icon"):
+                    attrs += ' atCursor="no"'
+                lines.append(f'<action name="{action}"{attrs} />')
+            lines.append("</mousebind>")
+        lines.append("</context>")
+    lines.append("<!-- END TRES DEFAULT MOUSE WITHOUT SUPER-LEFT -->")
+    return "\n".join(lines)
+
+
+# No Frame Super+left binding here: even an empty binding consumes the event.
+ALT_DRAG = """<!-- BEGIN TRES PANEL DRAG -->
+<context name="Frame">
+  <mousebind button="A-Left" action="Press">
+    <action name="Focus" />
+    <action name="Raise" />
+  </mousebind>
+  <mousebind button="A-Left" action="Drag">
+    <action name="Move" />
+  </mousebind>
+</context>
 <!-- END TRES PANEL DRAG -->"""
 
 
@@ -44,32 +110,44 @@ def configure(path: Path) -> str:
     if root.tag != "labwc_config":
         raise ValueError("Unexpected Labwc configuration root.")
 
-    if MARKED.search(text):
-        # Keep current managed region, including any deliberate user edits.
-        return "already-installed"
-
-    # Refuse to steal explicitly defined mouse gestures, including Alt+Left.
-    # The default bindings are not represented here unless a user configured
-    # them, so these checks preserve customized configurations.
+    mouse = root.find("mouse")
+    current_managed = MARKED.search(text) is not None
+    # Do not silently replace a fully hand-written mouse configuration
+    # without <default />; the user may rely on its explicit ordering.
+    if mouse is not None and mouse.find("default") is None:
+        if not current_managed:
+            return "skip-custom-mouse-config"
+        return "skip-custom-mouse-config"
     for context in root.findall("./mouse/context"):
         if (context.get("name") or "").casefold() != "frame":
             continue
         for binding in context.findall("mousebind"):
             button = (binding.get("button") or "").casefold()
-            if button in ("w-left", "a-left"):
+            # Ignore our old marked block by checking its region separately.
+            if button in ("w-left", "a-left") and not current_managed:
                 return "skip-custom-mousebind"
 
-    if re.search(r"</mouse\s*>", text):
-        updated = re.sub(r"</mouse\s*>", lambda _: "  " + BLOCK + "\n</mouse>",
-                         text, count=1)
-    elif re.search(r"</labwc_config\s*>", text):
-        updated = re.sub(
-            r"</labwc_config\s*>",
-            lambda _: "  <mouse>\n    <default />\n    " + BLOCK +
-                      "\n  </mouse>\n</labwc_config>",
-            text, count=1)
+    if mouse is not None:
+        match = MOUSE.search(text)
+        if match is None:
+            raise ValueError("Could not locate mouse configuration.")
+        body = match.group(0)
+        if current_managed:
+            body = MARKED.sub("", body)
+        # Remove the defaults in the mouse section ONLY, leaving the
+        # keyboard <default/> and all other sections untouched.
+        if not MOUSE_DEFAULT.search(body):
+            return "skip-custom-mouse-config"
+        body = MOUSE_DEFAULT.sub(lambda _: default_xml(), body, count=1)
+        body = re.sub(r"</mouse\s*>", lambda _: ALT_DRAG + "\n</mouse>", body, count=1)
+        updated = text[:match.start()] + body + text[match.end():]
     else:
-        raise ValueError("Labwc rc.xml lacks a closing root element.")
+        mouse_content = "<mouse>\n" + default_xml() + "\n" + ALT_DRAG + "\n</mouse>"
+        updated = re.sub(r"</labwc_config\s*>",
+                         lambda _: mouse_content + "\n</labwc_config>",
+                         text, count=1)
+        if updated == text:
+            raise ValueError("Labwc configuration has no closing root.")
     ET.fromstring(updated)
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=".rc-tres-drag-", dir=path.parent)
@@ -81,4 +159,4 @@ def configure(path: Path) -> str:
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
-    return "installed"
+    return "upgraded" if current_managed else "installed"
