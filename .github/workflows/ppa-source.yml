@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   source:
-    name: Validate Noble, Resolute and Stonking sources
+    name: Validate Noble, Resolute, Stonking and Tenacious sources
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout committed source
@@ -38,13 +38,16 @@ jobs:
         run: bash scripts/build-ppa-source.sh resolute --unsigned
       - name: Build Stonking source reusing exact Noble orig archive
         run: bash scripts/build-ppa-source.sh stonking --unsigned
-      - name: Verify three Ubuntu source uploads
+      - name: Build Tenacious source reusing exact Noble orig archive
+        run: bash scripts/build-ppa-source.sh tenacious --unsigned
+      - name: Verify four Ubuntu source uploads
         run: |
-          for series in noble resolute stonking; do
+          for series in noble resolute stonking tenacious; do
             case "$series" in
               noble) version='1.0.0-1~ppa1~ubuntu24.04.1' ;;
               resolute) version='1.0.0-1~ppa1~ubuntu26.04.1' ;;
               stonking) version='1.0.0-1~ppa1~ubuntu26.10.1' ;;
+              tenacious) version='1.0.0-1~ppa1~ubuntu27.04.1' ;;
             esac
             changes="dist/ppa/$series/tres_${version}_source.changes"
             test -s "$changes"
@@ -57,11 +60,13 @@ jobs:
           done
           cmp dist/ppa/noble/tres_1.0.0.orig.tar.gz dist/ppa/resolute/tres_1.0.0.orig.tar.gz
           cmp dist/ppa/noble/tres_1.0.0.orig.tar.gz dist/ppa/stonking/tres_1.0.0.orig.tar.gz
+          cmp dist/ppa/noble/tres_1.0.0.orig.tar.gz dist/ppa/tenacious/tres_1.0.0.orig.tar.gz
           ! grep -F 'tres_1.0.0.orig.tar.gz' dist/ppa/resolute/tres_1.0.0-1~ppa1~ubuntu26.04.1_source.changes
           ! grep -F 'tres_1.0.0.orig.tar.gz' dist/ppa/stonking/tres_1.0.0-1~ppa1~ubuntu26.10.1_source.changes
+          ! grep -F 'tres_1.0.0.orig.tar.gz' dist/ppa/tenacious/tres_1.0.0-1~ppa1~ubuntu27.04.1_source.changes
       - name: Lint source packages (report only)
         run: |
-          for series in noble resolute; do
+          for series in noble resolute stonking tenacious; do
             lintian dist/ppa/"$series"/*.dsc 2>&1 | tee "dist/ppa/$series/lintian-source.txt" || true
           done
       - name: Upload unsigned Noble review artifacts
@@ -81,4 +86,10 @@ jobs:
         with:
           name: tres-ppa-stonking-unsigned
           path: dist/ppa/stonking/
+          if-no-files-found: error
+      - name: Upload unsigned Tenacious review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tres-ppa-tenacious-unsigned
+          path: dist/ppa/tenacious/
           if-no-files-found: error
