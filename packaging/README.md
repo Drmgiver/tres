@@ -8,7 +8,7 @@ automatically get the software into Debian or Ubuntu archives.
 
 Open the [Debian package workflow](../.github/workflows/debian-package.yml) in this repository.
 Select a successful run and download the `tres-debian-packages` artifact.
-The ZIP contains `tres_0.6.0-1_all.deb`, an **unsigned** source package
+The ZIP contains `tres_1.0.0-1_all.deb`, an **unsigned** source package
 for review, and a lintian report. It is **not yet an official Ubuntu package**.
 
 The `Architecture: all` Debian package installs an optional
@@ -19,7 +19,7 @@ and `swaybg`.
 To test a build on an apt-based Linux system **on a spare/test machine first**:
 
 ```bash
-sudo apt install ./tres_0.6.0-1_all.deb
+sudo apt install ./tres_1.0.0-1_all.deb
 ```
 
 Choose **Tres** at the login screen. Keep your current desktop
@@ -75,7 +75,7 @@ sudo apt install debhelper dh-python dpkg-dev lintian
 dpkg-buildpackage --build=binary --no-sign
 ```
 
-The build emits `../tres_0.6.0-1_all.deb`.
+The build emits `../tres_1.0.0-1_all.deb`.
 For a **source** package, create an upstream source tarball first (without
 the `debian` directory), then build source:
 
@@ -83,8 +83,8 @@ the `debian` directory), then build source:
 srcdir="$(basename "$PWD")"
 cd ..
 tar --exclude-vcs --exclude="$srcdir/debian" \
-    --transform="s|^$srcdir|tres-0.6.0|" \
-    -czf tres_0.6.0.orig.tar.gz "$srcdir"
+    --transform="s|^$srcdir|tres-1.0.0|" \
+    -czf tres_1.0.0.orig.tar.gz "$srcdir"
 cd "$srcdir"
 dpkg-buildpackage --build=source --no-sign
 ```
@@ -92,9 +92,67 @@ dpkg-buildpackage --build=source --no-sign
 An upload to the Debian mentors or Ubuntu archive must have the proper
 signatures and other checks; the unsigned CI artifacts are for review/testing.
 
+## Tres 1.0 Gold — Launchpad PPA upload
+
+Tres's official PPA is https://launchpad.net/~drmgiver/+archive/ubuntu/tres.
+The GitHub release remains the upstream source. Launchpad imports its code
+separately and does not publish installable packages until a source upload.
+
+**Build signed source uploads on the maintainer's Linux computer** with the
+registered OpenPGP secret key available. Never upload a private key to GitHub
+Actions or Launchpad. The CI workflow builds *unsigned review artifacts only*.
+
+Install the necessary Debian/Ubuntu packaging tools:
+
+```bash
+sudo apt update
+sudo apt install build-essential debhelper dh-python dpkg-dev devscripts dput lintian python3
+```
+
+Update the local source checkout, then build **one Ubuntu series at a time**:
+
+```bash
+cd ~/Tres
+git pull --ff-only
+bash scripts/build-ppa-source.sh noble
+```
+
+The script checks that the Git working tree is clean, snapshots committed Git
+files, constructs the `tres_1.0.0.orig.tar.gz` upstream tarball, inserts a
+temporary Ubuntu-specific changelog entry, and creates a GPG-signed source
+upload at `dist/ppa/noble/`. It does *not* alter `debian/changelog` in Git.
+To send that signed Ubuntu 24.04 source package to the PPA:
+
+```bash
+dput ppa:drmgiver/tres dist/ppa/noble/tres_1.0.0-1~ppa1~ubuntu24.04.1_source.changes
+```
+
+For Ubuntu 26.04, run the same process with the separate `resolute` series:
+
+```bash
+bash scripts/build-ppa-source.sh resolute
+dput ppa:drmgiver/tres dist/ppa/resolute/tres_1.0.0-1~ppa1~ubuntu26.04.1_source.changes
+```
+
+Each version is unique to its Ubuntu release. Do not upload unsigned CI
+artifacts; Launchpad accepts source uploads signed by a registered key.
+Check accepted uploads and build results at the PPA URL; a successful local
+source build is not proof that the PPA has published installable packages.
+
+After successful publication on an Ubuntu release for which this PPA provides
+packages:
+
+```bash
+sudo add-apt-repository ppa:drmgiver/tres
+sudo apt update
+sudo apt install tres
+```
+
+Keep another desktop session installed while testing Tres.
+
 ## Getting into Debian and Ubuntu
 
-**Preferred route: Debian first.**
+**For public availability now: publish the PPA first, then submit to Debian.**
 
 1. Confirm the package name is available, select an actual, reachable
    maintainer email address, verify the GPL copyright notices and release
