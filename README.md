@@ -86,8 +86,9 @@ screen edge. Top and Bottom display the classic **horizontal row**;
 Left and Right display a **vertical stack** in the order Applications,
 Running windows, Applets (top to bottom). In **Reconfigure Tres → Appearance**,
 choose the edge and adjust X/Y pixel offsets. Switching edges resets offsets
-to zero so the selected side starts centered. Tres's private Labwc configuration releases its default Super+left window-move binding so the panel can receive the gesture, and uses Alt+left to move ordinary windows instead. Custom Super/Alt mouse bindings are not overwritten. Hold **Super** and left-drag
-any square to move the whole group; the offset persists across sessions.
+to zero so the selected side starts centered. Use **Apply appearance** to
+save your placement. Mouse dragging is not used; the squares remain buttons
+that open their respective menus.
 
 Under and Over position the visible squares without reserving work area.
 **Space reserved** uses a separate invisible edge-anchored layer-shell
