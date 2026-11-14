@@ -35,7 +35,7 @@ jobs:
               export DEBIAN_FRONTEND=noninteractive
               apt-get update
               apt-get install -y --no-install-recommends \
-                build-essential debhelper dh-python dpkg-dev lintian python3 \
+                build-essential debhelper dh-python dpkg-dev lintian python3 git \
                 python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 \
                 xvfb xauth
               workdir=$(mktemp -d)
@@ -52,4 +52,20 @@ jobs:
               dpkg-deb --contents "$workdir/tres_1.0.0-1_all.deb" | \
                 grep -F /usr/share/man/man1/tres.1.gz
               apt-get -s install "$workdir/tres_1.0.0-1_all.deb"
+              # Exercise the actual Debian mentors source builder without
+              # requiring a private signing key or altering the repository.
+              review=$(mktemp -d)
+              cp -a /checkout/. "$review/"
+              chown -R root:root "$review"
+              cd "$review"
+              mkdir -p dist/ppa/noble
+              upstream=$(mktemp -d)
+              mkdir -p "$upstream/tres-1.0.0"
+              git archive HEAD | tar -xf - -C "$upstream/tres-1.0.0"
+              tar -C "$upstream" --exclude=tres-1.0.0/debian \
+                -czf dist/ppa/noble/tres_1.0.0.orig.tar.gz tres-1.0.0
+              bash scripts/build-debian-source.sh --unsigned
+              test -s dist/debian/tres_1.0.0-1_source.changes
+              test -s dist/debian/tres_1.0.0-1.dsc
+              lintian --fail-on error dist/debian/tres_1.0.0-1.dsc
             '
