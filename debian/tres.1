@@ -1,0 +1,90 @@
+.TH TRES 1 "November 2026" "Tres 1.0" "User Commands"
+.SH NAME
+tres \- minimal three-square Wayland desktop and helper commands
+.SH SYNOPSIS
+.B tres-session
+.br
+.B tres-config
+.br
+.B tres-panel
+.br
+.B tres-panel-supervisor
+.br
+.B tres-panel-control restart
+.br
+.B tres-search
+.br
+.B tres-screenshot
+.br
+.B tres-open-files
+.br
+.B tres-open-terminal
+.br
+.B tres-wallpaper
+.br
+.B tres-synaptic
+.SH DESCRIPTION
+.B Tres
+is a minimal standalone Wayland desktop session built on Labwc.
+Three small squares provide the application launcher, running-window
+selection, and system applets without a traditional taskbar.
+.PP
+Normally, start Tres by choosing
+.B Tres
+from the display manager's session chooser. The
+.B tres-session
+command sets up Tres's private Labwc session and starts the compositor.
+.SH COMMANDS
+.TP
+.B tres-session
+Start the desktop session. Normally called by the display manager.
+.TP
+.B tres-config
+Open Tres configuration for display scaling, positioning, appearance,
+keyboard shortcuts, and default applications.
+.TP
+.B tres-panel
+Run the three-square panel within a Wayland session.
+.TP
+.B tres-panel-supervisor
+Start and supervise the panel, restarting it after unexpected exits.
+.TP
+.B tres-panel-control restart
+Restart the currently supervised Tres panel.
+.TP
+.B tres-search
+Open Tres application search.
+.TP
+.B tres-screenshot
+Open the screenshot utility for full-screen and area capture.
+.TP
+.B tres-open-files
+Open the user's home directory with the configured file manager.
+.TP
+.B tres-open-terminal
+Launch the configured terminal emulator.
+.TP
+.B tres-wallpaper
+Launch the configured Tres background using swaybg.
+.TP
+.B tres-synaptic
+Start Synaptic with graphical privilege authorization if Synaptic is installed.
+.SH FILES
+.TP
+.I ~/.config/tres/
+User-controlled Tres settings and state.
+.TP
+.I ~/.config/tres/labwc/
+Labwc autostart, mouse and keyboard bindings, and menu configuration.
+.TP
+.I ~/.cache/tres/
+Session and panel diagnostic logs.
+.SH SEE ALSO
+.BR labwc (1),
+.BR swaybg (1),
+.BR grim (1),
+.BR slurp (1)
+.SH AUTHOR
+Tres contributors.
+.SH COPYRIGHT
+Tres is distributed under the GNU General Public License version 3.
