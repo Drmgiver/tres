@@ -1,6 +1,7 @@
 tres (1.0.0-1) unstable; urgency=medium
 
-  * Release Tres 1.0 Gold, the configurable three-square Wayland desktop.
+  * Initial Debian release of Tres 1.0 Gold, the configurable three-square
+    Wayland desktop (Closes: #1153994).
   * Finalize panel positioning, stack order, application menus, system applets,
     desktop settings, screenshot tools and independent login session.
   * Remove experimental mouse-drag handling and restore normal Labwc bindings.
