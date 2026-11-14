@@ -1,6 +1,11 @@
-version=4
-# Track future official upstream tags (for example v1.1.0).
-# Tres 1.0.0 was published before a GitHub release/tag was established.
-opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%tres-$1.tar.gz%" \
-  https://github.com/Drmgiver/Tres/tags \
-  (?:.*?/)?v?(\d[\d.]*)\.tar\.gz
+Version: 5
+# Tres 1.0.0 was initially distributed as a signed Ubuntu PPA source archive.
+# The upstream repository has no versioned Git tags or release archives yet.
+# Do not create a v1.0.0 tag pointing at today's main: it would not represent
+# the immutable 1.0.0 upstream archive already distributed.
+# Once the next genuine upstream release is tagged, remove Untrackable and
+# verify discovery with: uscan --no-download --verbose
+Untrackable: No versioned upstream Git tags or release archives have been published yet.
+Template: GitHub
+Owner: Drmgiver
+Project: Tres
