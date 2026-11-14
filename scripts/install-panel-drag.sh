@@ -18,9 +18,9 @@ try:
 except (ValueError, OSError, ET.ParseError) as error:
     print(f"Tres drag: keeping existing mouse config: {error}")
 else:
-    if state == "installed":
+    if state in ("installed", "upgraded"):
         print("Tres drag: Super+left reserved for panel; Alt+left moves ordinary windows.")
-    elif state == "skip-custom-mousebind":
+    elif state in ("skip-custom-mousebind", "skip-custom-mouse-config"):
         print("Tres drag: existing custom Super/Alt mouse bindings preserved; "
               "automatic setup skipped.")
     elif state == "skip-symlink":
