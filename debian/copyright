@@ -1,5 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Tres
+Upstream-Contact: J. Michael Willenburg <drmgiver@gmail.com>
 Source: https://github.com/Drmgiver/Tres
 
 Files: *
