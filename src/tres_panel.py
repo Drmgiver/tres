@@ -122,6 +122,9 @@ class Tres:
         self._drag = None
         self._suppress_click = False
         self._drag_gesture = None
+        # Temporary opt-in input trace. No logging unless the user creates
+        # ~/.config/tres/trace-panel-drag.
+        self._trace_drag = (Path.home() / ".config/tres/trace-panel-drag").exists()
         self._layout_mode = None
         self._reservation_window = None
         self._reservation_config = None
@@ -147,6 +150,12 @@ class Tres:
             box.pack_start(btn, False, False, 0)
             self.square_buttons.append(btn)
         self.window.add(box)
+        if self._trace_drag:
+            self.window.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
+                                   Gdk.EventMask.BUTTON_RELEASE_MASK |
+                                   Gdk.EventMask.POINTER_MOTION_MASK)
+            self.window.connect("button-press-event", self._trace_button_press)
+            self.window.connect("button-release-event", self._trace_button_release)
         # Capture the gesture at the toplevel BEFORE Gtk.Button handles it.
         # Ordinary unmodified clicks are denied by this gesture and retain
         # their existing button callbacks.
@@ -288,6 +297,24 @@ class Tres:
         if self._drag is None:
             self._apply_position(self._position)
 
+    def _drag_trace(self, event_name, **fields):
+        if not getattr(self, "_trace_drag", False):
+            return
+        # Only local event and modifier values; no app/window names or input
+        # text. stderr is captured in Tres's existing panel log.
+        details = " ".join(f"{key}={value}" for key, value in fields.items())
+        print(f"TRES_DRAG {event_name} {details}", file=sys.stderr, flush=True)
+
+    def _trace_button_press(self, _widget, event):
+        self._drag_trace("button-press", button=event.button,
+                         state=int(event.state))
+        return False
+
+    def _trace_button_release(self, _widget, event):
+        self._drag_trace("button-release", button=event.button,
+                         state=int(event.state))
+        return False
+
     @staticmethod
     def _super_pressed(state):
         return bool(state & (Gdk.ModifierType.MOD4_MASK |
@@ -295,6 +322,9 @@ class Tres:
 
     def _gesture_begin(self, gesture, _start_x, _start_y):
         event = gesture.get_last_event(None)
+        self._drag_trace("gesture-begin",
+                         state=int(event.state) if event is not None else "missing",
+                         super=bool(event and self._super_pressed(event.state)))
         if event is None or not self._super_pressed(event.state):
             gesture.set_state(Gtk.EventSequenceState.DENIED)
             return
@@ -309,6 +339,8 @@ class Tres:
         gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
     def _gesture_update(self, _gesture, offset_x, offset_y):
+        self._drag_trace("gesture-update", x=round(offset_x), y=round(offset_y),
+                         active=self._drag is not None)
         if self._drag is None:
             return
         initial_x, initial_y, previous_dx, previous_dy, moved = self._drag
@@ -334,6 +366,7 @@ class Tres:
         self._drag = (initial_x, initial_y, dx, dy, moved)
 
     def _gesture_end(self, _gesture, _offset_x, _offset_y):
+        self._drag_trace("gesture-end", active=self._drag is not None)
         if self._drag is None:
             return
         moved = self._drag[4]
