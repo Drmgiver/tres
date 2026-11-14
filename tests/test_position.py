@@ -90,8 +90,10 @@ class PositionTests(unittest.TestCase):
     def test_panel_integrated_in_settings_and_installers(self):
         panel = (ROOT / "src/tres_panel.py").read_text()
         settings = (ROOT / "src/tres_config.py").read_text()
-        self.assertIn("Gdk.ModifierType.SUPER_MASK", panel)
-        self.assertIn("save_position(self._position)", panel)
+        self.assertNotIn("GestureDrag", panel)
+        self.assertNotIn("_gesture_begin", panel)
+        self.assertNotIn("TRES_DRAG", panel)
+        self.assertIn("fine_x.get_value_as_int()", settings)
         self.assertIn("Gtk.Orientation.VERTICAL", panel)
         self.assertIn("GtkLayerShell.Edge.BOTTOM", panel)
         self.assertIn("GtkLayerShell.Edge.RIGHT", panel)
