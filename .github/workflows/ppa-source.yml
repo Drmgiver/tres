@@ -1,0 +1,62 @@
+name: Tres PPA source packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "debian/**"
+      - "packaging/**"
+      - "src/**"
+      - "scripts/**"
+      - ".github/workflows/ppa-source.yml"
+  pull_request:
+    paths:
+      - "debian/**"
+      - "packaging/**"
+      - "src/**"
+      - "scripts/**"
+      - ".github/workflows/ppa-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    name: Unsigned source review (${{ matrix.series }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        series: [noble, resolute]
+    steps:
+      - name: Checkout committed source
+        uses: actions/checkout@v4
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential debhelper dh-python dpkg-dev devscripts lintian python3
+      - name: Build unsigned source (review only; signing happens locally)
+        run: bash scripts/build-ppa-source.sh "${{ matrix.series }}" --unsigned
+      - name: Verify Ubuntu series, version, and source-only upload
+        run: |
+          case "${{ matrix.series }}" in
+            noble) version='1.0.0-1~ppa1~ubuntu24.04.1' ;;
+            resolute) version='1.0.0-1~ppa1~ubuntu26.04.1' ;;
+          esac
+          changes="dist/ppa/${{ matrix.series }}/tres_${version}_source.changes"
+          test -s "$changes"
+          grep -Fx "Distribution: ${{ matrix.series }}" "$changes"
+          grep -Fx "Version: $version" "$changes"
+          grep -Fx 'Architecture: source' "$changes"
+          test -s "dist/ppa/${{ matrix.series }}/tres_1.0.0.orig.tar.gz"
+          test -s "dist/ppa/${{ matrix.series }}/tres_${version}.dsc"
+      - name: Lint source package (report for review)
+        run: |
+          lintian dist/ppa/${{ matrix.series }}/*.dsc 2>&1 | tee "dist/ppa/${{ matrix.series }}/lintian-source.txt" || true
+      - name: Upload unsigned review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tres-ppa-${{ matrix.series }}-unsigned
+          path: dist/ppa/${{ matrix.series }}/
+          if-no-files-found: error
