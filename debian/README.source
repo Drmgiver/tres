@@ -1,0 +1,20 @@
+Tres upstream source tracking
+============================
+
+Tres 1.0.0 was released as a frozen upstream source tarball for the
+project's first signed Ubuntu PPA uploads. GitHub's main branch has
+since gained packaging and documentation updates and must not be
+retrospectively tagged v1.0.0: it no longer represents that archive.
+
+No upstream versioned Git tags or GitHub release assets have been
+published yet. Therefore this initial Debian source package deliberately
+has no debian/watch file. A watch rule scraping an empty GitHub tags
+page reported "no matching files" during Debian Mentors QA.
+
+When the next upstream source version is published, tag that actual
+release revision (not the mutable main branch), add a version-5
+debian/watch tracking GitHub tags or release assets, and test with
+uscan --no-download --verbose.
+
+The original 1.0.0 source archive should not be regenerated under the
+same upstream version, as accepted distributions already retain it.
