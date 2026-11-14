@@ -1,9 +1,8 @@
 Source: tres
 Section: x11
-Priority: optional
 Maintainer: J. Michael Willenburg <drmgiver@gmail.com>
 Build-Depends: debhelper-compat (= 13), dh-python, python3
-Standards-Version: 4.7.0
+Standards-Version: 4.7.4
 Rules-Requires-Root: no
 Homepage: https://github.com/Drmgiver/Tres
 Vcs-Git: https://github.com/Drmgiver/Tres.git
