@@ -28,8 +28,8 @@ except (ImportError, ValueError) as error:
 
 from tres_core import activate, request_power_action, submenu_pages, windows  # noqa: E402
 from tres_layout import read_mode  # noqa: E402
-from tres_position import (read_position, save_position, coordinates, with_coordinates,
-                           panel_size, reservation_depth)  # noqa: E402
+from tres_position import (read_position, coordinates, panel_size,
+                           reservation_depth)  # noqa: E402
 from tres_preferences import read_appearance  # noqa: E402
 from tres_terminal import open_terminal as open_selected_terminal  # noqa: E402
 from tres_audio import audio_backend, change_volume, volume_label, AudioError  # noqa: E402
@@ -119,13 +119,6 @@ class Tres:
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.LEFT, True)
         GtkLayerShell.set_keyboard_mode(self.window, GtkLayerShell.KeyboardMode.NONE)
         self._position = read_position()
-        self._drag = None
-        self._suppress_click = False
-        self._drag_gesture = None
-        self._pressed_button = None
-        # Temporary opt-in input trace. No logging unless the user creates
-        # ~/.config/tres/trace-panel-drag.
-        self._trace_drag = (Path.home() / ".config/tres/trace-panel-drag").exists()
         self._layout_mode = None
         self._reservation_window = None
         self._reservation_config = None
@@ -151,22 +144,6 @@ class Tres:
             box.pack_start(btn, False, False, 0)
             self.square_buttons.append(btn)
         self.window.add(box)
-        if self._trace_drag:
-            self.window.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
-                                   Gdk.EventMask.BUTTON_RELEASE_MASK |
-                                   Gdk.EventMask.POINTER_MOTION_MASK)
-            self.window.connect("button-press-event", self._trace_button_press)
-            self.window.connect("button-release-event", self._trace_button_release)
-        # Capture the gesture at the toplevel BEFORE Gtk.Button handles it.
-        # Ordinary unmodified clicks are denied by this gesture and retain
-        # their existing button callbacks.
-        self._drag_gesture = Gtk.GestureDrag.new(self.window)
-        self._drag_gesture.set_button(1)
-        self._drag_gesture.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
-        self._drag_gesture.connect("drag-begin", self._gesture_begin)
-        self._drag_gesture.connect("drag-update", self._gesture_update)
-        self._drag_gesture.connect("drag-end", self._gesture_end)
-        self._drag_gesture.connect("cancel", self._gesture_cancel)
         self.window.connect("size-allocate", self._on_size_allocate)
         self.window.show_all()
         self._apply_position(self._position)
@@ -295,109 +272,7 @@ class Tres:
         self._reserve_work_area(position, x, y, width, height, monitor)
 
     def _on_size_allocate(self, _window, _allocation):
-        if self._drag is None:
-            self._apply_position(self._position)
-
-    def _drag_trace(self, event_name, **fields):
-        if not getattr(self, "_trace_drag", False):
-            return
-        # Only local event and modifier values; no app/window names or input
-        # text. stderr is captured in Tres's existing panel log.
-        details = " ".join(f"{key}={value}" for key, value in fields.items())
-        print(f"TRES_DRAG {event_name} {details}", file=sys.stderr, flush=True)
-
-    def _trace_button_press(self, _widget, event):
-        self._drag_trace("button-press", button=event.button,
-                         state=int(event.state))
-        return False
-
-    def _trace_button_release(self, _widget, event):
-        self._drag_trace("button-release", button=event.button,
-                         state=int(event.state))
-        return False
-
-    @staticmethod
-    def _super_pressed(state):
-        return bool(state & (Gdk.ModifierType.MOD4_MASK |
-                             Gdk.ModifierType.SUPER_MASK))
-
-    def _gesture_begin(self, gesture, start_x, start_y):
-        event = gesture.get_last_event(None)
-        self._drag_trace("gesture-begin",
-                         state=int(event.state) if event is not None else "missing")
-        # Layer-shell has keyboard interactivity NONE. On the actual Tres
-        # desktop, GDK reports state=0 even with Super physically held. Do
-        # not depend on a modifier that Wayland cannot deliver here. Any
-        # deliberate drag works, including Super+left-drag.
-        monitor = self._monitor_dimensions()
-        if monitor is None:
-            gesture.set_state(Gtk.EventSequenceState.DENIED)
-            return
-        # Capture before Gtk.Button takes the sequence, otherwise its own
-        # click gesture wins and we never get drag-update. Since we claim the
-        # press, synthesize a normal button click on release if no drag occurs.
-        self._pressed_button = None
-        for button in self.square_buttons:
-            area = button.get_allocation()
-            if (area.x <= start_x < area.x + area.width and
-                    area.y <= start_y < area.y + area.height):
-                self._pressed_button = button
-                break
-        width, height = self._panel_dimensions()
-        x, y = coordinates(self._position, width, height, *monitor)
-        self._drag = (x, y, 0.0, 0.0, False)
-        self._suppress_click = False
-        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
-
-    def _gesture_update(self, _gesture, offset_x, offset_y):
-        self._drag_trace("gesture-update", x=round(offset_x), y=round(offset_y),
-                         active=self._drag is not None)
-        if self._drag is None:
-            return
-        initial_x, initial_y, previous_dx, previous_dy, moved = self._drag
-        # GTK reports accumulated drag offsets in local widget coordinates;
-        # unlike global coordinates, these are valid under Wayland.
-        dx, dy = float(offset_x), float(offset_y)
-        if not moved and abs(dx) + abs(dy) < 3:
-            return
-        monitor = self._monitor_dimensions()
-        if monitor is None:
-            return
-        width, height = self._panel_dimensions()
-        current_x, current_y = coordinates(self._position, width, height, *monitor)
-        new_x = max(0, min(max(0, monitor[0] - width),
-                           round(current_x + dx - previous_dx)))
-        new_y = max(0, min(max(0, monitor[1] - height),
-                           round(current_y + dy - previous_dy)))
-        if (new_x, new_y) != (current_x, current_y):
-            self._position = with_coordinates(self._position["edge"], new_x, new_y,
-                                              width, height, *monitor)
-            self._apply_position(self._position)
-            moved = True
-        self._drag = (initial_x, initial_y, dx, dy, moved)
-
-    def _gesture_end(self, _gesture, _offset_x, _offset_y):
-        self._drag_trace("gesture-end", active=self._drag is not None)
-        if self._drag is None:
-            return
-        moved = self._drag[4]
-        self._drag = None
-        button = self._pressed_button
-        self._pressed_button = None
-        if moved:
-            self._suppress_click = True
-            try:
-                save_position(self._position)
-            except OSError as error:
-                print(f"Could not save Tres panel position: {error}", file=sys.stderr)
-        elif button is not None:
-            # A claimed sequence never reaches Gtk.Button's default click
-            # handler, so dispatch its existing action on a stationary press.
-            GLib.idle_add(button.clicked)
-
-    def _gesture_cancel(self, _gesture, _sequence):
-        self._drag = None
-        self._pressed_button = None
+        self._apply_position(self._position)
 
     def _apply_mode(self, mode: str) -> None:
         if mode not in ("under", "over", "reserved"):
@@ -422,7 +297,7 @@ class Tres:
         if mode != self._layout_mode:
             self._apply_mode(mode)
         latest_position = read_position()
-        if self._drag is None and latest_position != self._position:
+        if latest_position != self._position:
             self._position = latest_position
             self._apply_position(self._position)
         current = read_appearance()
@@ -438,9 +313,6 @@ class Tres:
         return True
 
     def open_menu(self, button, builder) -> None:
-        if self._suppress_click:
-            self._suppress_click = False
-            return
         menu = builder()
         menu.show_all()
         if self._position["edge"] == "left":
