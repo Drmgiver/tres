@@ -50,13 +50,14 @@ install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
 install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
-for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu tres_applications tres_search tres_position tres_mouse; do
+for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu tres_applications tres_search tres_position; do
     install -m 0644 "$ROOT/src/$module.py" "$DEST/$module.py"
 done
 bash "$ROOT/scripts/install-screenshot.sh"
 bash "$ROOT/scripts/install-settings.sh"
 bash "$ROOT/scripts/install-search-shortcut.sh"
-bash "$ROOT/scripts/install-panel-drag.sh"
+bash "$ROOT/scripts/restore-panel-mouse.sh"
+rm -f -- "$DEST/tres_mouse.py"
 bash "$ROOT/scripts/install-portals.sh"
 cat > "$BIN/tres-panel" <<'EOF'
 #!/bin/sh
