@@ -51,6 +51,7 @@ jobs:
           grep -Fx 'Architecture: source' "$changes"
           test -s "dist/ppa/${{ matrix.series }}/tres_1.0.0.orig.tar.gz"
           test -s "dist/ppa/${{ matrix.series }}/tres_${version}.dsc"
+          test -s "dist/ppa/${{ matrix.series }}/tres_${version}_source.buildinfo"
       - name: Lint source package (report for review)
         run: |
           lintian dist/ppa/${{ matrix.series }}/*.dsc 2>&1 | tee "dist/ppa/${{ matrix.series }}/lintian-source.txt" || true
