@@ -21,7 +21,7 @@ for name in ("tres_core.py", "tres_panel.py", "tres_layout.py", "tres_config.py"
              "tres_preferences.py", "tres_display.py", "tres_shortcuts.py",
              "tres_open.py", "tres_wallpaper.py", "tres_terminal.py",
              "tres_audio.py", "tres_panel_control.py", "tres_menu.py",
-             "tres_applications.py", "tres_search.py", "tres_position.py", "tres_mouse.py"):
+             "tres_applications.py", "tres_search.py", "tres_position.py"):
     ast.parse((src / name).read_text(encoding="utf-8"), filename=name)
 print("Python source syntax: OK")
 PY
@@ -32,13 +32,14 @@ install -m 0644 "$ROOT/src/tres_layout.py" "$DEST/tres_layout.py"
 install -m 0644 "$ROOT/src/tres_config.py" "$DEST/tres_config.py"
 install -m 0644 "$ROOT/src/tres_capture.py" "$DEST/tres_capture.py"
 install -m 0644 "$ROOT/src/tres_screenshot.py" "$DEST/tres_screenshot.py"
-for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu tres_applications tres_search tres_position tres_mouse; do
+for module in tres_preferences tres_display tres_shortcuts tres_open tres_wallpaper tres_terminal tres_audio tres_panel_control tres_menu tres_applications tres_search tres_position; do
     install -m 0644 "$ROOT/src/$module.py" "$DEST/$module.py"
 done
 bash "$ROOT/scripts/install-screenshot.sh"
 bash "$ROOT/scripts/install-settings.sh"
 bash "$ROOT/scripts/install-search-shortcut.sh"
-bash "$ROOT/scripts/install-panel-drag.sh"
+bash "$ROOT/scripts/restore-panel-mouse.sh"
+rm -f -- "$DEST/tres_mouse.py"
 bash "$ROOT/scripts/install-portals.sh"
 mkdir -p "$BIN" "$CFG"
 cat > "$BIN/tres-config" <<'EOF'
