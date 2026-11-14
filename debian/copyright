@@ -3,11 +3,11 @@ Upstream-Name: Tres
 Source: https://github.com/Drmgiver/Tres
 
 Files: *
-Copyright: 2026 Tres for Linux contributors
+Copyright: 2026 J. Michael Willenburg <drmgiver@gmail.com>
 License: GPL-3
 
 Files: debian/* packaging/deb/*
-Copyright: 2026 Tres for Linux contributors
+Copyright: 2026 J. Michael Willenburg <drmgiver@gmail.com>
 License: GPL-3
 
 License: GPL-3
