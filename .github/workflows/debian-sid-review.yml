@@ -1,0 +1,55 @@
+name: Tres Debian unstable package review
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "debian/**"
+      - "packaging/deb/**"
+      - "src/**"
+      - "scripts/**"
+      - ".github/workflows/debian-sid-review.yml"
+  pull_request:
+    paths:
+      - "debian/**"
+      - "packaging/deb/**"
+      - "src/**"
+      - "scripts/**"
+      - ".github/workflows/debian-sid-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sid:
+    name: Build and lint inside Debian unstable
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Tres
+        uses: actions/checkout@v4
+      - name: Build and review with Debian unstable packages
+        run: |
+          docker run --rm --volume "$PWD:/checkout:ro" debian:unstable \
+            bash -euxo pipefail -c '
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update
+              apt-get install -y --no-install-recommends \
+                build-essential debhelper dh-python dpkg-dev lintian python3 \
+                python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 \
+                xvfb xauth
+              workdir=$(mktemp -d)
+              mkdir -p "$workdir/tres-1.0.0"
+              tar -C /checkout --exclude=./.git --exclude=./dist -cf - . | \
+                tar -C "$workdir/tres-1.0.0" -xf -
+              tar -C "$workdir" --exclude=tres-1.0.0/debian \
+                -czf "$workdir/tres_1.0.0.orig.tar.gz" tres-1.0.0
+              cd "$workdir/tres-1.0.0"
+              dpkg-buildpackage --build=binary --no-sign
+              dpkg-buildpackage --build=source --no-sign
+              lintian --fail-on error "$workdir/tres_1.0.0-1_all.deb" \
+                "$workdir/tres_1.0.0-1.dsc"
+              dpkg-deb --contents "$workdir/tres_1.0.0-1_all.deb" | \
+                grep -F /usr/share/man/man1/tres.1.gz
+              apt-get -s install "$workdir/tres_1.0.0-1_all.deb"
+            '
