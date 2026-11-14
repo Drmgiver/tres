@@ -37,6 +37,7 @@ class DragTests(unittest.TestCase):
         panel._position = {"edge": "top", "x": 0, "y": 0}
         panel._drag = None
         panel._suppress_click = False
+        panel._drag_trace = lambda *args, **kwargs: None
         panel._monitor_dimensions = lambda: (1920, 1080)
         panel._panel_dimensions = lambda: (67, 19)
         moved = []
