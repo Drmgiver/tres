@@ -1,0 +1,6 @@
+version=4
+# Track future official upstream tags (for example v1.1.0).
+# Tres 1.0.0 was published before a GitHub release/tag was established.
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%tres-$1.tar.gz%" \
+  https://github.com/Drmgiver/Tres/tags \
+  (?:.*?/)?v?(\d[\d.]*)\.tar\.gz
