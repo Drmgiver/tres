@@ -4,11 +4,11 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 <noble|resolute> [--unsigned]" >&2
+  echo "Usage: $0 <noble|resolute|stonking> [--unsigned]" >&2
   exit 2
 }
 
-[[ ${1:-} == noble || ${1:-} == resolute ]] || usage
+[[ ${1:-} == noble || ${1:-} == resolute || ${1:-} == stonking ]] || usage
 series=$1
 mode=${2:-}
 [[ -z $mode || $mode == --unsigned ]] || usage
@@ -16,6 +16,7 @@ mode=${2:-}
 case "$series" in
   noble) ubuntu_version=24.04 ;;
   resolute) ubuntu_version=26.04 ;;
+  stonking) ubuntu_version=26.10 ;;
 esac
 version="1.0.0-1~ppa1~ubuntu${ubuntu_version}.1"
 key="2914B44A8F9A39641D18E89873D67A036AAA0D36"
