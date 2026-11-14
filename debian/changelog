@@ -1,3 +1,14 @@
+tres (1.0.0-1) unstable; urgency=medium
+
+  * Release Tres 1.0 Gold, the configurable three-square Wayland desktop.
+  * Finalize panel positioning, stack order, application menus, system applets,
+    desktop settings, screenshot tools and independent login session.
+  * Remove experimental mouse-drag handling and restore normal Labwc bindings.
+  * Prepare signed Ubuntu PPA source-package builds without changing the
+    Debian unstable package series.
+
+ -- J. Michael Willenburg <drmgiver@gmail.com>  Fri, 13 Nov 2026 19:30:00 -0600
+
 tres (0.6.0-1) unstable; urgency=medium
 
   * Repair session ownership checks and clean manual uninstallation.
