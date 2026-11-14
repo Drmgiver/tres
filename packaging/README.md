@@ -139,6 +139,19 @@ bash scripts/build-ppa-source.sh resolute
 dput -f ppa:drmgiver/tres dist/ppa/resolute/tres_1.0.0-1~ppa1~ubuntu26.04.1_source.changes
 ```
 
+For Ubuntu 26.10 (Stonking Stingray), use that *same* immutable source
+archive and build a separate release-specific upload:
+
+```bash
+bash scripts/build-ppa-source.sh stonking
+dput ppa:drmgiver/tres dist/ppa/stonking/tres_1.0.0-1~ppa1~ubuntu26.10.1_source.changes
+```
+
+The original source archive from Noble must remain in
+`dist/ppa/noble/tres_1.0.0.orig.tar.gz` for the signed upload to work.
+Launchpad builds the 26.10 binary separately. Verify acceptance, build
+success, and publication in Launchpad before announcing support.
+
 The `-f` upload option handles a local `dput` record left by a prior
 rejected attempt. New signed source changes reference the original archive
 without reuploading it. **Keep the Noble original source archive**; if it is
