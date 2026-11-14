@@ -38,5 +38,4 @@ src/tres_search.py usr/share/tres
 src/tres_applications.py usr/share/tres
 packaging/deb/tres-search usr/bin
 src/tres_position.py usr/share/tres
-src/tres_mouse.py usr/share/tres
-scripts/install-panel-drag.sh usr/lib/tres
+scripts/restore-panel-mouse.sh usr/lib/tres
