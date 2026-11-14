@@ -112,18 +112,21 @@ def configure(path: Path) -> str:
 
     mouse = root.find("mouse")
     current_managed = MARKED.search(text) is not None
+    # Idempotent after migration: an explicitly expanded default block
+    # is already present, and no Frame Super binding is reintroduced.
+    if "BEGIN TRES DEFAULT MOUSE WITHOUT SUPER-LEFT" in text:
+        return "already-installed"
     # Do not silently replace a fully hand-written mouse configuration
     # without <default />; the user may rely on its explicit ordering.
     if mouse is not None and mouse.find("default") is None:
-        if not current_managed:
-            return "skip-custom-mouse-config"
         return "skip-custom-mouse-config"
     for context in root.findall("./mouse/context"):
         if (context.get("name") or "").casefold() != "frame":
             continue
         for binding in context.findall("mousebind"):
             button = (binding.get("button") or "").casefold()
-            # Ignore our old marked block by checking its region separately.
+            # Ignore previous Tres-managed entries but protect independent
+            # user overrides that appear outside our marked block.
             if button in ("w-left", "a-left") and not current_managed:
                 return "skip-custom-mousebind"
 
