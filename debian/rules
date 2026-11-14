@@ -10,6 +10,10 @@ override_dh_auto_test:
 override_dh_fixperms:
 	dh_fixperms
 	chmod 0755 debian/tres/usr/bin/tres-synaptic debian/tres/usr/lib/tres/tres-synaptic.sh debian/tres/usr/bin/tres-search
+	chmod 0755 debian/tres/usr/lib/tres/install-search-shortcut.sh \
+		debian/tres/usr/lib/tres/restore-panel-mouse.sh \
+		debian/tres/usr/lib/tres/tres-polkit-agent.sh \
+		debian/tres/usr/share/tres/migrate-legacy.sh
 
 override_dh_python3:
 	dh_python3 /usr/share/tres
