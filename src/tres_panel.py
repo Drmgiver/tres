@@ -122,6 +122,7 @@ class Tres:
         self._drag = None
         self._suppress_click = False
         self._drag_gesture = None
+        self._pressed_button = None
         # Temporary opt-in input trace. No logging unless the user creates
         # ~/.config/tres/trace-panel-drag.
         self._trace_drag = (Path.home() / ".config/tres/trace-panel-drag").exists()
@@ -320,18 +321,28 @@ class Tres:
         return bool(state & (Gdk.ModifierType.MOD4_MASK |
                              Gdk.ModifierType.SUPER_MASK))
 
-    def _gesture_begin(self, gesture, _start_x, _start_y):
+    def _gesture_begin(self, gesture, start_x, start_y):
         event = gesture.get_last_event(None)
         self._drag_trace("gesture-begin",
-                         state=int(event.state) if event is not None else "missing",
-                         super=bool(event and self._super_pressed(event.state)))
-        if event is None or not self._super_pressed(event.state):
-            gesture.set_state(Gtk.EventSequenceState.DENIED)
-            return
+                         state=int(event.state) if event is not None else "missing")
+        # Layer-shell has keyboard interactivity NONE. On the actual Tres
+        # desktop, GDK reports state=0 even with Super physically held. Do
+        # not depend on a modifier that Wayland cannot deliver here. Any
+        # deliberate drag works, including Super+left-drag.
         monitor = self._monitor_dimensions()
         if monitor is None:
             gesture.set_state(Gtk.EventSequenceState.DENIED)
             return
+        # Capture before Gtk.Button takes the sequence, otherwise its own
+        # click gesture wins and we never get drag-update. Since we claim the
+        # press, synthesize a normal button click on release if no drag occurs.
+        self._pressed_button = None
+        for button in self.square_buttons:
+            area = button.get_allocation()
+            if (area.x <= start_x < area.x + area.width and
+                    area.y <= start_y < area.y + area.height):
+                self._pressed_button = button
+                break
         width, height = self._panel_dimensions()
         x, y = coordinates(self._position, width, height, *monitor)
         self._drag = (x, y, 0.0, 0.0, False)
@@ -371,15 +382,22 @@ class Tres:
             return
         moved = self._drag[4]
         self._drag = None
+        button = self._pressed_button
+        self._pressed_button = None
         if moved:
             self._suppress_click = True
             try:
                 save_position(self._position)
             except OSError as error:
                 print(f"Could not save Tres panel position: {error}", file=sys.stderr)
+        elif button is not None:
+            # A claimed sequence never reaches Gtk.Button's default click
+            # handler, so dispatch its existing action on a stationary press.
+            GLib.idle_add(button.clicked)
 
     def _gesture_cancel(self, _gesture, _sequence):
         self._drag = None
+        self._pressed_button = None
 
     def _apply_mode(self, mode: str) -> None:
         if mode not in ("under", "over", "reserved"):
