@@ -417,6 +417,13 @@ class Tres:
         menu.append(self.item(volume_label()))
         menu.append(self.separator())
 
+        # Tres runs as its own Labwc session. Do not launch settings panels
+        # requiring services provided by a different desktop environment.
+        # Use the same Tres dialog as the desktop right-click menu instead.
+        menu.append(self.item("Reconfigure Tres…", lambda: spawn_first(
+            (str(Path.home() / ".local/bin/tres-config"),),
+            ("/usr/bin/tres-config",))))
+
         if audio_backend() is not None:
             audio = [self.item("Volume +5%", lambda: self.audio("up")),
                      self.item("Volume -5%", lambda: self.audio("down")),
@@ -426,13 +433,6 @@ class Tres:
         if shutil.which("pavucontrol"):
             audio.append(self.item("Sound settings", lambda: spawn_first(("pavucontrol",))))
         menu.append(self.submenu("Audio", audio))
-
-        # Tres runs as its own Labwc session. Do not launch settings panels
-        # requiring services provided by a different desktop environment.
-        # Use the same Tres dialog as the desktop right-click menu instead.
-        menu.append(self.item("Reconfigure Tres…", lambda: spawn_first(
-            (str(Path.home() / ".local/bin/tres-config"),),
-            ("/usr/bin/tres-config",))))
 
         utilities = [
             ("Network connections", ("nm-connection-editor",)),
