@@ -252,6 +252,20 @@ transfer, not Debian archive acceptance. The Mentors site then provides
 the RFS template for the next step. Official instructions:
 https://mentors.debian.net/intro-maintainers/.
 
+### Upstream release tracking
+
+The `debian/watch` file uses Debian watch format 5 with an explicit
+`Untrackable` explanation **until an actual versioned upstream tag exists**.
+The initial 1.0.0 upstream archive was frozen for the Noble PPA before tags
+were created, and current GitHub `main` is not that original archive.
+Do not retroactively tag current `main` as `v1.0.0`.
+
+When a future real upstream version is published with a version tag,
+remove `Untrackable` from `debian/watch`, run
+`uscan --no-download --verbose`, and verify that the version and
+downloaded archive correspond to the release. The Debian unstable CI
+checks the current watch state with `uscan`.
+
 ## Getting into Debian and Ubuntu
 
 **For public availability now: publish the PPA first, then submit to Debian.**
