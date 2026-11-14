@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111319">
+  <meta name="description" content="Tres is a minimalist Linux desktop environment built on Wayland and Labwc. Three tiny squares replace the taskbar: applications, windows, and system controls. Open-source and customizable.">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Tres contributors">
+  <link rel="canonical" href="https://drmgiver.github.io/tres/">
+  <title>Tres Desktop Environment — Minimalist Wayland Desktop for Linux</title>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tres Desktop Environment">
+  <meta property="og:title" content="Tres — The desktop, reduced to three squares">
+  <meta property="og:description" content="A lightweight Wayland desktop environment for Linux. No taskbar. No dock. Just three squares.">
+  <meta property="og:url" content="https://drmgiver.github.io/tres/">
+  <meta name="twitter:card" content="summary">
+  <style>
+    :root {color-scheme:dark;--bg:#0e1015;--panel:#171a22;--panel2:#1d202a;--line:#313745;--text:#f4f5f7;--soft:#b6bece;--muted:#8993a5;--accent:#b7d8ff}
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+    a{color:inherit} a:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:2px}
+    .wrap{width:min(1100px,calc(100% - 40px));margin:auto}
+    header{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+    header .wrap{display:flex;justify-content:space-between;align-items:center;gap:24px}
+    .logo{display:inline-flex;align-items:center;gap:13px;text-decoration:none;font-size:23px;font-weight:750;letter-spacing:-.045em}
+    .mini{display:flex;gap:4px;align-items:center}.mini span{display:block;width:9px;height:9px;background:#fff}
+    nav{display:flex;gap:22px;align-items:center;font-size:14px;color:var(--soft)}
+    nav a{text-decoration:none}nav a:hover,.plain:hover{color:#fff}
+    .hero{text-align:center;padding:94px 0 48px}
+    .eyebrow{font-size:12px;letter-spacing:.19em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+    h1,h2,h3,p{margin-top:0}h1{font-size:clamp(43px,7vw,78px);line-height:1.06;letter-spacing:-.065em;font-weight:780;max-width:880px;margin:19px auto 26px}
+    .lead{font-size:clamp(17px,2.2vw,21px);color:var(--soft);max-width:730px;margin:0 auto 31px}
+    .actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 21px;border:1px solid #78859b;border-radius:8px;text-decoration:none;font-size:14px;font-weight:680}
+    .btn.primary{background:#f2f5f9;color:#111319;border-color:#f2f5f9}.btn:hover{transform:translateY(-1px)}
+    .desktop{position:relative;width:min(950px,100%);height:clamp(250px,42vw,440px);margin:64px auto 32px;border:1px solid #596071;border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 80%,#334059 0%,#182134 42%,#10151f 75%);box-shadow:0 30px 90px #0009}
+    .desktop:before{content:"";position:absolute;inset:0;background:linear-gradient(125deg,#ffffff06,transparent 45%);pointer-events:none}
+    .three{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:2}
+    .three span{display:block;width:19px;height:19px;background:white;border:1px solid #ddd}
+    .desktop .window{position:absolute;left:12%;top:22%;width:57%;height:65%;border:1px solid #5d6575;border-radius:7px 7px 0 0;background:#1c222d;box-shadow:0 17px 45px #0007;overflow:hidden}
+    .winbar{height:36px;background:#292f3b;border-bottom:1px solid #505968;display:flex;justify-content:space-between;align-items:center;padding:0 13px;font-size:12px;color:#d8dde8}
+    .winbar i{height:8px;width:8px;background:#a2adbf;border-radius:50%;display:inline-block;margin-left:6px}
+    .window .inner{padding:clamp(18px,4vw,45px);color:#e9edf3;font-size:clamp(15px,2.7vw,26px);letter-spacing:-.035em}
+    .window .inner small{display:block;margin-top:12px;color:#9eabc0;font-size:clamp(11px,1.4vw,15px);letter-spacing:0}
+    .desktop .note{position:absolute;right:6%;bottom:9%;font-size:12px;color:#c1ccdd;letter-spacing:.09em;text-transform:uppercase}
+    .caption{font-size:13px;color:var(--muted);text-align:center}
+    section{padding:74px 0;border-top:1px solid var(--line)}
+    .section-head{max-width:760px;margin-bottom:34px}h2{font-size:clamp(27px,4vw,41px);line-height:1.13;letter-spacing:-.046em;margin-bottom:15px}h3{font-size:18px;letter-spacing:-.023em;margin-bottom:11px}
+    section p{color:var(--soft)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+    .feature{padding:27px 23px;background:var(--panel);border:1px solid var(--line);border-radius:11px;min-height:210px}
+    .sq{height:19px;width:19px;background:white;margin-bottom:29px}
+    .feature p{font-size:14px;margin-bottom:0}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:start}
+    .facts{margin:0;padding:0;list-style:none}.facts li{padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;color:var(--soft)}.facts b{color:var(--text)}
+    pre{background:#080a0e;border:1px solid var(--line);border-radius:9px;padding:20px;overflow:auto;font-size:13px;line-height:1.8;color:#dfebff}
+    code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    .plain{color:var(--accent);font-weight:600}
+    .faq{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .faq article{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px}
+    .faq article p{font-size:14px;margin-bottom:0}
+    footer{border-top:1px solid var(--line);padding:30px 0 60px;color:var(--muted);font-size:13px}
+    footer .wrap{display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap}
+    footer a{color:var(--soft)}
+    @media(max-width:750px){nav{gap:13px}nav a:nth-child(2){display:none}.hero{padding-top:72px}.grid,.split,.faq{grid-template-columns:1fr}.desktop{margin-top:44px}.desktop .window{width:72%;left:7%}.split{gap:22px}section{padding:55px 0}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn:hover{transform:none}}
+  </style>
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Tres Desktop Environment","alternateName":"Tres","url":"https://drmgiver.github.io/tres/","codeRepository":"https://github.com/Drmgiver/tres","description":"A minimalist Linux desktop environment and standalone Wayland session, built around Labwc, with three small squares for applications, running windows and system controls.","applicationCategory":"DesktopEnvironment","operatingSystem":"Linux","license":"https://www.gnu.org/licenses/gpl-3.0.en.html","isAccessibleForFree":true}
+  </script>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="#top" aria-label="Tres homepage"><span class="mini" aria-hidden="true"><span></span><span></span><span></span></span>Tres</a>
+      <nav aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/Drmgiver/tres">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+  <main id="top">
+    <div class="wrap">
+      <div class="hero">
+        <div class="eyebrow">A Linux desktop environment · Wayland + Labwc</div>
+        <h1>The desktop, reduced to three squares.</h1>
+        <p class="lead">Tres is a lightweight, independent desktop environment for Linux. No permanent taskbar. No dock. Just the controls you need, and everything else out of your way.</p>
+        <div class="actions">
+          <a class="btn primary" href="#install">Get Tres</a>
+          <a class="btn" href="https://github.com/Drmgiver/tres">Explore the source ↗</a>
+        </div>
+        <div class="desktop" role="img" aria-label="Illustrative Tres desktop mockup with three white squares centered at the top and an unobtrusive application window">
+          <div class="three" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="window" aria-hidden="true">
+            <div class="winbar"><span>Tres desktop</span><span><i></i><i></i><i></i></span></div>
+            <div class="inner">Less interface.<br>More of your desktop.<small>Minimal by design. Customizable by choice.</small></div>
+          </div>
+          <div class="note" aria-hidden="true">Illustration · not a screenshot</div>
+        </div>
+        <p class="caption">Three white squares, centered at the edge of your desktop. Actual appearance depends on your settings.</p>
+      </div>
+    </div>
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">One simple idea</div>
+          <h2>All the essentials. Almost no chrome.</h2>
+          <p>Each square has a job. Access programs, switch between open windows, or reach desktop controls without sacrificing screen space to a full panel.</p>
+        </div>
+        <div class="grid">
+          <article class="feature"><div class="sq" aria-hidden="true"></div><h3>Applications</h3><p>The left square opens categorized application menus and application search for the software installed on your computer.</p></article>
+          <article class="feature"><div class="sq" aria-hidden="true"></div><h3>Running windows</h3><p>The middle square lets you find and activate open windows without keeping a taskbar visible all day.</p></article>
+          <article class="feature"><div class="sq" aria-hidden="true"></div><h3>Controls & applets</h3><p>The right square provides clock, audio, battery and other available desktop controls, session actions, and Tres configuration.</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="about">
+      <div class="wrap split">
+        <div>
+          <div class="eyebrow">Designed to disappear</div>
+          <h2>A real desktop session, not just a theme.</h2>
+          <p>Tres runs as its own selectable Linux desktop session, with the lightweight Labwc Wayland compositor underneath. By default, normal windows can cover the three squares, keeping your workspace uncluttered.</p>
+          <p>Change the square size and colors, position, display scaling, keyboard shortcuts, and default applications through Tres settings. The familiar 19-pixel white squares remain the default.</p>
+          <p>Inspired by the classic LiteStep Tres theme, this is an original open-source recreation—not the original theme's source code.</p>
+        </div>
+        <ul class="facts">
+          <li><b>Display system:</b> Wayland</li>
+          <li><b>Compositor:</b> Labwc</li>
+          <li><b>Desktop approach:</b> three-square interface</li>
+          <li><b>Platform:</b> Linux (apt-based installation documented)</li>
+          <li><b>License:</b> GNU GPL v3</li>
+          <li><b>Status:</b> evolving open-source project; hardware compatibility varies</li>
+        </ul>
+      </div>
+    </section>
+    <section id="install">
+      <div class="wrap split">
+        <div>
+          <div class="eyebrow">Get started</div>
+          <h2>Try Tres on Linux.</h2>
+          <p>For apt-based distributions, follow the documented source installer. It sets up a separate Tres session at login, so you can keep your existing desktop available while testing.</p>
+          <p>Review the <a class="plain" href="https://github.com/Drmgiver/tres#installation-apt-based-linux-distributions">full installation and troubleshooting instructions</a> first, especially if you have hybrid graphics. Experimental Debian packaging is also documented in the repository.</p>
+        </div>
+        <div>
+          <pre><code>git clone https://github.com/Drmgiver/tres.git
+cd tres
+bash install.sh</code></pre>
+          <p><small>Keep another working desktop installed while testing. Hardware and distribution support is still being expanded.</small></p>
+          <a class="btn primary" href="https://github.com/Drmgiver/tres">View project on GitHub ↗</a>
+        </div>
+      </div>
+    </section>
+    <section id="faq">
+      <div class="wrap">
+        <div class="section-head"><div class="eyebrow">Good to know</div><h2>About the project</h2></div>
+        <div class="faq">
+          <article><h3>Is Tres the same as Trinity Desktop Environment?</h3><p>No. Tres Desktop Environment is an independent project and is unrelated to Trinity Desktop Environment (TDE).</p></article>
+          <article><h3>How is Tres developed?</h3><p>Tres uses human-directed, AI-assisted development. The project maintainer guides design, tests the result, and controls releases; AI assists with coding, debugging, and documentation.</p></article>
+          <article><h3>Is Tres open source?</h3><p>Yes. The source code is publicly available on GitHub under the GNU General Public License version 3.</p></article>
+          <article><h3>Does Tres replace my existing desktop?</h3><p>It installs as a separate selectable session. Keep your existing environment available, especially while testing hardware and driver compatibility.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap"><span>© 2026 Tres contributors · Independent open-source project</span><span><a href="https://github.com/Drmgiver/tres">Source code</a> · <a href="https://github.com/Drmgiver/tres/issues">Report an issue</a> · <a href="https://github.com/Drmgiver/tres/blob/main/LICENSE">GPL-3.0</a></span></div>
+  </footer>
+</body>
+</html>
