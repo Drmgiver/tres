@@ -35,7 +35,7 @@ jobs:
               export DEBIAN_FRONTEND=noninteractive
               apt-get update
               apt-get install -y --no-install-recommends \
-                build-essential debhelper dh-python dpkg-dev lintian devscripts python3 git \
+                build-essential debhelper dh-python dpkg-dev lintian python3 git \
                 python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 \
                 xvfb xauth
               workdir=$(mktemp -d)
@@ -47,9 +47,9 @@ jobs:
               cd "$workdir/tres-1.0.0"
               dpkg-buildpackage --build=binary --no-sign
               dpkg-buildpackage --build=source --no-sign
-              # Confirm upstream tracking is intentionally marked untrackable
-              # until the first real GitHub version tag exists.
-              uscan --no-download --verbose
+              # No versioned upstream release tags exist yet, so a watch file
+              # claiming to track them would produce a misleading QA warning.
+              test ! -e debian/watch
               lintian --fail-on error "$workdir/tres_1.0.0-1_all.deb" \
                 "$workdir/tres_1.0.0-1.dsc"
               dpkg-deb --contents "$workdir/tres_1.0.0-1_all.deb" | \
