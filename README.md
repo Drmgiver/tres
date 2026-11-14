@@ -1,7 +1,17 @@
-# Tres
+# Tres Desktop Environment — Minimalist Wayland Desktop for Linux
 
-A **three-square, ultra-minimal Wayland desktop**, inspired by the old LiteStep
-**Tres** theme. This is an original recreation, not original LiteStep theme code.
+**Tres** is a lightweight, three-square **desktop environment for Linux**: a standalone
+Wayland desktop session built around Labwc. It gives you an application menu, a
+running-window selector, and system controls without a taskbar, dock, or
+full-width panel.
+
+Inspired by the classic LiteStep **Tres** theme, Tres is an original
+recreation—not the original theme's source code. **Tres is independent of and
+unrelated to Trinity Desktop Environment (TDE).**
+
+**Project:** [GitHub source and releases](https://github.com/Drmgiver/tres) ·
+[Desktop homepage](https://drmgiver.github.io/tres/) (requires GitHub Pages to be enabled) ·
+[Installation instructions](#installation-apt-based-linux-distributions)
 
 ```
                   [■] [■] [■]
@@ -454,6 +464,14 @@ and back into Tres to reload the panel.
   browser screen sharing and advanced GPU behavior still need broader testing.
 - The application menu lists `.desktop` applications visible to Gio; hidden
   or command-line-only programs are omitted.
+
+## Development and AI assistance
+
+Tres is an independently maintained open-source project developed through
+**human-directed, AI-assisted collaboration**. The human project maintainer
+sets the direction, tests the desktop, reviews outcomes, and makes release
+decisions. AI tools assist with implementation, debugging, and documentation.
+Contributions and generated code are subject to the same project standards.
 
 ## Development
 
