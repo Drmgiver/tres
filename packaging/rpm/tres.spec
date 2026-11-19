@@ -65,6 +65,22 @@ done
 install -m 0644 packaging/deb/tres.desktop %{buildroot}%{_datadir}/wayland-sessions/tres.desktop
 install -m 0644 packaging/deb/tres-screenshot.desktop %{buildroot}%{_datadir}/applications/tres-screenshot.desktop
 
+# Executable Python entry points are invoked through %{_bindir}/tres-*.
+# In the module directory they are data, not direct scripts: remove shebangs
+# rather than giving every importable module executable permissions.
+for module in tres_config.py tres_panel.py tres_panel_control.py \
+    tres_screenshot.py tres_search.py tres_terminal.py tres_wallpaper.py; do
+    sed -i '1{/^#!\/usr\/bin\/python3$/d;}' "%{buildroot}%{_datadir}/tres/$module"
+done
+
+# RPM dependency scanners need an explicit Bash interpreter. Patch only the
+# copies in the RPM payload; keep source-installer scripts portable upstream.
+for helper in tres-synaptic.sh install-search-shortcut.sh restore-panel-mouse.sh; do
+    sed -i '1s|^#!/usr/bin/env bash$|#!/usr/bin/bash|' "%{buildroot}/usr/lib/tres/$helper"
+done
+sed -i '1s|^#!/usr/bin/env bash$|#!/usr/bin/bash|' \
+    "%{buildroot}%{_datadir}/tres/migrate-legacy.sh"
+
 %check
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 
