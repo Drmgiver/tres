@@ -32,6 +32,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/tres-rpm/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
-          git archive --format=tar --prefix=tres-1.0.1/ HEAD | xz -c > /tmp/tres-rpm/SOURCES/tres-1.0.1.tar.xz
+          git -c safe.directory="$PWD" archive --format=tar --prefix=tres-1.0.1/ HEAD | xz -c > /tmp/tres-rpm/SOURCES/tres-1.0.1.tar.xz
           rpmbuild -bb packaging/rpm/tres.spec --define '_topdir /tmp/tres-rpm'
           find /tmp/tres-rpm/RPMS -type f -name 'tres-*.rpm' -print -exec rpm -qpl {} \;
