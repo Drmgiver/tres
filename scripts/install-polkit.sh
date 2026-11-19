@@ -26,6 +26,6 @@ if ! grep -Fq 'tres-polkit-agent' "$AUTOSTART"; then
 EOF
 fi
 if ! command -v lxpolkit >/dev/null 2>&1; then
-    echo "Missing lxpolkit: run sudo apt-get install lxpolkit" >&2
+    echo "Missing lxpolkit: install the lxpolkit package with your distribution package manager." >&2
 fi
 echo "Tres Polkit agent configured; log out and back into Tres."
