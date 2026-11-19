@@ -21,7 +21,7 @@ if [[ -f "$AUTOSTART" && ! -L "$AUTOSTART" ]] &&
     if [[ ! -e "$AUTOSTART.before-tres-portals" ]]; then
         cp -p -- "$AUTOSTART" "$AUTOSTART.before-tres-portals"
     fi
-    /usr/bin/python3 - "$AUTOSTART" <<'PY'
+    python3 - "$AUTOSTART" <<'PY'
 from pathlib import Path
 import sys
 path = Path(sys.argv[1])
