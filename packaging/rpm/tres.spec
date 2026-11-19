@@ -73,6 +73,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 %doc README.md
 %{_bindir}/tres-*
 %dir %{_datadir}/tres
+%dir %{_datadir}/wayland-sessions
 %{_datadir}/tres/*
 %dir /usr/lib/tres
 /usr/lib/tres/*
