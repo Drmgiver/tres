@@ -12,7 +12,7 @@ if [[ ! -d "$DEST" ]]; then
 fi
 
 # Validate syntax before touching the installed files.
-/usr/bin/python3 - "$ROOT" <<'PY'
+python3 - "$ROOT" <<'PY'
 import ast
 from pathlib import Path
 import sys
@@ -46,7 +46,7 @@ cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
 # Tres-managed launcher
 # Tres stacking configuration launcher.
-exec /usr/bin/python3 "$HOME/.local/share/tres/tres_config.py" "$@"
+exec python3 "$HOME/.local/share/tres/tres_config.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-config"
 if [[ ! -e "$CFG/menu.xml" ]]; then
