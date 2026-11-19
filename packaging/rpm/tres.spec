@@ -9,6 +9,7 @@ Source0:        %{name}-%{version}.tar.xz
 BuildArch:      noarch
 
 BuildRequires:  python3
+BuildRequires:  desktop-file-utils
 Requires:       python3
 Requires:       python3-gobject
 Requires:       labwc
@@ -65,7 +66,7 @@ done
 install -m 0644 packaging/deb/tres.desktop %{buildroot}%{_datadir}/wayland-sessions/tres.desktop
 install -m 0644 packaging/deb/tres-screenshot.desktop %{buildroot}%{_datadir}/applications/tres-screenshot.desktop
 
-# Executable Python entry points are invoked through %{_bindir}/tres-*.
+# Executable Python entry points are invoked through /usr/bin/tres-*.
 # In the module directory they are data, not direct scripts: remove shebangs
 # rather than giving every importable module executable permissions.
 for module in tres_config.py tres_panel.py tres_panel_control.py \
@@ -82,6 +83,8 @@ sed -i '1s|^#!/usr/bin/env bash$|#!/usr/bin/bash|' \
     "%{buildroot}%{_datadir}/tres/migrate-legacy.sh"
 
 %check
+# Run the same desktop-entry validator used by the RPM linter.
+desktop-file-validate packaging/deb/tres-screenshot.desktop
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 
 %files
