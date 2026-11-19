@@ -23,10 +23,12 @@ jobs:
     container: fedora:44
     steps:
       - name: Install packaging tools
-        run: dnf -y install git rpm-build python3 tar xz findutils
+        run: dnf -y install git rpm-build python3 tar xz findutils desktop-file-utils
       - uses: actions/checkout@v4
       - name: Check session bootstrap syntax
         run: sh -n packaging/rpm/tres-session
+      - name: Validate desktop entry
+        run: desktop-file-validate packaging/deb/tres-screenshot.desktop
       - name: Build RPM from current checkout
         shell: bash
         run: |
