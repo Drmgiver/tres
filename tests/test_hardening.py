@@ -180,6 +180,9 @@ class PackageAndSessionTests(TestCase):
         # Guard against accidental duplicate installer bodies or malformed
         # ownership checks when changing release scripts.
         self.assertEqual(installer.count("sudo apt-get update"), 1)
+        self.assertIn('--skip-deps', installer)
+        self.assertIn('if [[ "$install_deps" -eq 1 ]]', installer)
+        self.assertIn('Missing Tres dependencies:', installer)
         self.assertEqual(installer.count("sudo install -m 0755"), 1)
         self.assertIn("grep -qx 'X-Tres=true'", installer)
 
