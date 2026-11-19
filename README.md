@@ -11,7 +11,7 @@ unrelated to Trinity Desktop Environment (TDE).**
 
 **Project:** [GitHub source and releases](https://github.com/Drmgiver/tres) ·
 [Desktop homepage](https://drmgiver.github.io/tres/) ·
-[Installation instructions](#installation-apt-based-linux-distributions)
+[Installation instructions](#installation-from-source)
 
 ```
                   [■] [■] [■]
@@ -154,7 +154,7 @@ commands remain in that menu. The three-square layout remains completely
 unchanged unless you explicitly choose different appearance settings.
 
 To update a script-based Tres installation without reinstalling another desktop or
-running the full APT installer:
+running the full source installer:
 
 ```bash
 cd ~/Tres
@@ -202,7 +202,7 @@ Tres starts the lightweight `lxpolkit` authentication agent in its own session,
 so applications such as Synaptic can display a password prompt when requesting
 administrator privileges. The source installer installs `lxpolkit` automatically.
 For an existing manual installation, update with `bash scripts/update-panel.sh`;
-if it reports a missing agent, run `sudo apt-get install lxpolkit` and log out
+if it reports a missing agent, install `lxpolkit` using your distribution's package manager and log out
 and back into Tres. The Debian package depends on `lxpolkit`.
 
 The installer only adds a Tres-owned startup entry to existing configuration;
@@ -240,59 +240,40 @@ particular, **existing users of the GitHub shell installer need to migrate
 their autostart file** so the login session runs the package-managed panel.
 This is not yet a package in Ubuntu's official archive.
 
-## Installation (apt-based Linux distributions)
+## Installation from source
 
-Clone this repository and run the installer from inside it:
+Tres does not install software through APT, DNF, Zypper, or any other package
+manager. Install the required dependencies using your distribution's own
+packages first: Labwc, Python 3 with GI bindings for GTK3 and GtkLayerShell,
+wlrctl, foot, swaybg, grim, slurp, wlr-randr, and lxpolkit. XDG portal
+backends are recommended for desktop integration. Package names vary.
+
+Clone the repository and run:
 
 ```bash
-git clone https://github.com/Drmgiver/Tres.git
-cd Tres
+git clone https://github.com/Drmgiver/tres.git
+cd tres
 bash install.sh
 ```
 
-The installer:
-- Installs `labwc`, `python3-gi`, GTK3 bindings, `wlrctl`, `foot`,
-  `swaybg`, `grim`, `slurp`, `wlr-randr`, and the Wayland portal
-  backends through apt.
-- Installs Tres files into `~/.local/share/tres/` and launcher
-  `~/.local/bin/tres-panel`.
-- Creates a **private** `~/.config/tres/labwc/` configuration (without
-  editing `~/.config/labwc/` or other desktops' settings).
-- Adds **Tres** to your login manager's session list with a small
-  system-wide wrapper and `.desktop` file, requiring `sudo`.
+The installer checks the runtime requirements before installing. The legacy
+`--skip-deps` argument is accepted but no longer needed. The source installer
+installs Tres into your home directory and, with `sudo`, installs the optional
+login entry and launcher under `/usr/share/wayland-sessions` and
+`/usr/local/bin`. It does not modify other desktop sessions.
 
-**Test it nested** *inside another Wayland desktop* before logging into it:
+**Source installs on Fedora/openSUSE are not yet validated.** Package-managed
+installations should instead be built using that distribution's package
+specifications; never run the source installer over a packaged Tres session.
+
+To test inside an existing Wayland session:
 
 ```bash
 bash scripts/test-nested.sh
 ```
 
-A nested Wayland compositor should appear in its own window. It is *not* a
-perfect test of native hybrid-GPU startup. Use Alt+F4 to close that window.
-
-Then log out, choose **Tres** at your login screen, and sign in.
-If no login session selector is visible, check your display manager's UI.
-Your other installed desktop sessions remain available.
-
-## Manual source installation on non-APT distributions
-
-Tres's desktop code does not require APT. On Fedora, openSUSE, or another
-distribution, install the equivalent dependencies through the distribution's
-own package manager first, then run:
-
-```bash
-bash install.sh --skip-deps
-```
-
-This mode never runs APT. It checks for Labwc, wlrctl, foot, swaybg, Grim,
-Slurp, wlr-randr, lxpolkit, system Python 3, and its GTK3/GtkLayerShell GI
-bindings *before* changing the session installation. It still requires
-`sudo` to install the login-session entry and wrapper.
-
-**This is an advanced source-install route, not a declaration of validated
-Fedora/openSUSE support.** Package names, availability, desktop portals, and
-runtime integration differ across distributions; those need separate build
-and login testing. Prefer a native distribution package when available.
+Then log out and select Tres from the login manager. Keep a known-working
+desktop login available for testing.
 
 ## Upgrading an existing Tres-Labwc installation
 
@@ -382,7 +363,7 @@ you need **Labwc output scaling**, not a different resolution. Run these
 commands **inside Tres**, not another desktop session:
 
 ```bash
-sudo apt install wlr-randr
+# Install wlr-randr with your distribution's package manager
 wlr-randr
 ```
 
