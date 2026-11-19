@@ -76,3 +76,20 @@ jobs:
           rpm_file=$(find /tmp/tres-rpm/RPMS -type f -name 'tres-*.rpm' -print -quit)
           test -n "$rpm_file"
           rpmlint "$rpm_file"
+      - name: Install RPM with openSUSE dependency resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          rpm_file=$(find /tmp/tres-rpm/RPMS -type f -name 'tres-*.rpm' -print -quit)
+          test -n "$rpm_file"
+          zypper --non-interactive --no-recommends install "$rpm_file"
+          test -x /usr/bin/tres-session
+          test -f /usr/share/wayland-sessions/tres.desktop
+          python3 - <<'PY'
+          import gi
+          gi.require_version("Gdk", "3.0")
+          gi.require_version("Gtk", "3.0")
+          gi.require_version("GtkLayerShell", "0.1")
+          from gi.repository import Gdk, Gtk, GtkLayerShell
+          print("Tres GTK3 and layer-shell introspection bindings available")
+          PY
