@@ -1,0 +1,15 @@
+<services>
+  <!-- Prototype: follow main during development; pin to a release tag before publishing. -->
+  <service name="obs_scm">
+    <param name="url">https://github.com/Drmgiver/tres.git</param>
+    <param name="scm">git</param>
+    <param name="revision">main</param>
+    <param name="filename">tres</param>
+    <param name="versionformat">1.0.1</param>
+  </service>
+  <service name="tar" mode="buildtime"/>
+  <service name="recompress" mode="buildtime">
+    <param name="file">*.tar</param>
+    <param name="compression">xz</param>
+  </service>
+</services>
