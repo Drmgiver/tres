@@ -82,7 +82,8 @@ jobs:
           set -euo pipefail
           rpm_file=$(find /tmp/tres-rpm/RPMS -type f -name 'tres-*.rpm' -print -quit)
           test -n "$rpm_file"
-          zypper --non-interactive install --no-recommends "$rpm_file"
+          # The CI-built local RPM is intentionally unsigned; published OBS packages are signed.
+          zypper --non-interactive --no-gpg-checks install --no-recommends "$rpm_file"
           test -x /usr/bin/tres-session
           test -f /usr/share/wayland-sessions/tres.desktop
           python3 - <<'PY'
