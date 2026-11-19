@@ -11,8 +11,23 @@ if [[ ${EUID} -eq 0 ]]; then
     echo 'Run this script as your normal desktop user, not root.' >&2
     exit 1
 fi
-if ! command -v apt-get >/dev/null 2>&1; then
-    echo 'This installer targets apt-based Linux systems. See README for manual setup.' >&2
+# The distribution package manager should supply dependencies for packaged builds.
+# Source users on non-APT systems may install dependencies themselves first.
+install_deps=1
+case "${1:-}" in
+    --skip-deps) install_deps=0; shift ;;
+    --help|-h)
+        printf '%s\n' 'Usage: bash install.sh [--skip-deps]' '  --skip-deps  Use dependencies installed by your distribution (no APT commands).'
+        exit 0 ;;
+    "") ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+esac
+if [[ $# -ne 0 ]]; then
+    echo 'Unexpected extra installer arguments.' >&2
+    exit 2
+fi
+if [[ "$install_deps" -eq 1 ]] && ! command -v apt-get >/dev/null 2>&1; then
+    echo 'APT is unavailable. Install distribution dependencies and rerun: bash install.sh --skip-deps' >&2
     exit 1
 fi
 # Do not let the source installer overwrite a package-managed session.
@@ -34,9 +49,31 @@ if [[ -e "$SYSTEM_WRAPPER" ]] &&
     exit 1
 fi
 
-printf '%s\n' 'Installing Labwc, GTK3 layer-shell, wlrctl, a terminal, and wallpaper helper.'
-sudo apt-get update
-sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr lxpolkit
+if [[ "$install_deps" -eq 1 ]]; then
+    printf '%s\n' 'Installing Tres dependencies with APT.'
+    sudo apt-get update
+    sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr lxpolkit
+else
+    # Fail *before* copying any files if essential runtime components are absent.
+    missing=()
+    for binary in labwc wlrctl foot swaybg grim slurp wlr-randr lxpolkit python3; do
+        command -v "$binary" >/dev/null 2>&1 || missing+=("$binary")
+    done
+    if command -v /usr/bin/python3 >/dev/null 2>&1; then
+        if ! /usr/bin/python3 -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk; gi.require_version("GtkLayerShell", "0.1"); from gi.repository import GtkLayerShell' >/dev/null 2>&1; then
+            missing+=('Python GI bindings for GTK3 and GtkLayerShell (system Python)')
+        fi
+    else
+        missing+=('/usr/bin/python3')
+    fi
+    if (( ${#missing[@]} )); then
+        printf 'Missing Tres dependencies:\n' >&2
+        printf '  %s\n' "${missing[@]}" >&2
+        echo 'Install the corresponding packages with your distribution package manager.' >&2
+        exit 1
+    fi
+    printf '%s\n' 'Using preinstalled distribution dependencies; APT will not be called.'
+fi
 
 # Copy the previous Tres configuration, if any, without deleting the old one.
 if [[ -d "$HOME/.config/tres-labwc" && ! -e "$HOME/.config/tres" ]]; then
