@@ -21,7 +21,7 @@ install_launcher() {
     cat > "$target" <<EOF
 #!/bin/sh
 # Tres-managed launcher
-exec /usr/bin/python3 "\$HOME/.local/share/tres/$module.py" "\$@"
+exec python3 "\$HOME/.local/share/tres/$module.py" "\$@"
 EOF
     chmod 0755 "$target"
 }
@@ -44,7 +44,7 @@ if [[ -f "$AUTOSTART" ]] &&
     if [[ ! -e "$AUTOSTART.before-tres-wallpaper" ]]; then
         cp -p -- "$AUTOSTART" "$AUTOSTART.before-tres-wallpaper"
     fi
-    /usr/bin/python3 - "$AUTOSTART" <<'PY'
+    python3 - "$AUTOSTART" <<'PY'
 import os
 import sys
 from pathlib import Path
