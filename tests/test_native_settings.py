@@ -231,7 +231,9 @@ class UpgradeTests(TestCase):
             self.assertFalse(launched.exists(),
                              "Installing launchers unexpectedly started a terminal")
             self.assertIn("tres_terminal.py", terminal.read_text(encoding="utf-8"))
-            self.assertIn('exec /usr/bin/python3', terminal.read_text(encoding="utf-8"))
+            # The source launcher must find Python through PATH, not assume
+            # Debian's /usr/bin layout on every distribution.
+            self.assertIn('exec python3', terminal.read_text(encoding="utf-8"))
 
     def test_settings_installer_does_not_replace_unowned_launcher(self):
         script = ROOT / "scripts/install-settings.sh"

@@ -3,7 +3,7 @@
 # Restores Labwc's built-in mouse defaults while preserving user bindings.
 set -euo pipefail
 RC="${XDG_CONFIG_HOME:-$HOME/.config}/tres/labwc/rc.xml"
-/usr/bin/python3 - "$RC" <<'PY'
+python3 - "$RC" <<'PY'
 import os
 import re
 import sys

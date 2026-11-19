@@ -11,9 +11,18 @@ if [[ ${EUID} -eq 0 ]]; then
     echo 'Run this script as your normal desktop user, not root.' >&2
     exit 1
 fi
-if ! command -v apt-get >/dev/null 2>&1; then
-    echo 'This installer targets apt-based Linux systems. See README for manual setup.' >&2
-    exit 1
+# Distribution packages supply dependencies; the source installer never runs
+# a system package manager. --skip-deps remains a compatibility alias.
+case "${1:-}" in
+    ""|--skip-deps) ;;
+    --help|-h)
+        printf '%s\n' 'Usage: bash install.sh [--skip-deps]' 'Install Tres using preinstalled system dependencies (no package manager calls).'
+        exit 0 ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+esac
+if [[ $# -gt 1 ]]; then
+    echo 'Unexpected extra installer arguments.' >&2
+    exit 2
 fi
 # Do not let the source installer overwrite a package-managed session.
 if command -v dpkg-query >/dev/null 2>&1; then
@@ -34,9 +43,23 @@ if [[ -e "$SYSTEM_WRAPPER" ]] &&
     exit 1
 fi
 
-printf '%s\n' 'Installing Labwc, GTK3 layer-shell, wlrctl, a terminal, and wallpaper helper.'
-sudo apt-get update
-sudo apt-get install -y labwc python3-gi gir1.2-gtk-3.0 gir1.2-gtklayershell-0.1 wlrctl foot swaybg grim slurp wlr-randr xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr lxpolkit
+# Verify the essential runtime before making changes to the installation.
+missing=()
+for binary in labwc wlrctl foot swaybg grim slurp wlr-randr lxpolkit python3; do
+    command -v "$binary" >/dev/null 2>&1 || missing+=("$binary")
+done
+if command -v python3 >/dev/null 2>&1; then
+    if ! python3 -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk; gi.require_version("GtkLayerShell", "0.1"); from gi.repository import GtkLayerShell' >/dev/null 2>&1; then
+        missing+=('Python 3 GI bindings for GTK3 and GtkLayerShell')
+    fi
+fi
+if (( ${#missing[@]} )); then
+    printf 'Missing Tres dependencies:\n' >&2
+    printf '  %s\n' "${missing[@]}" >&2
+    echo 'Install these with your distribution package manager, then rerun.' >&2
+    exit 1
+fi
+printf '%s\n' 'Using distribution-provided dependencies; no package manager will be invoked.'
 
 # Copy the previous Tres configuration, if any, without deleting the old one.
 if [[ -d "$HOME/.config/tres-labwc" && ! -e "$HOME/.config/tres" ]]; then
@@ -62,14 +85,14 @@ bash "$ROOT/scripts/install-portals.sh"
 cat > "$BIN/tres-panel" <<'EOF'
 #!/bin/sh
 # Tres-managed launcher
-exec /usr/bin/python3 "$HOME/.local/share/tres/tres_panel.py" "$@"
+exec python3 "$HOME/.local/share/tres/tres_panel.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-panel"
 cat > "$BIN/tres-config" <<'EOF'
 #!/bin/sh
 # Tres-managed launcher
 # Tres stacking configuration launcher.
-exec /usr/bin/python3 "$HOME/.local/share/tres/tres_config.py" "$@"
+exec python3 "$HOME/.local/share/tres/tres_config.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-config"
 if [[ ! -e "$CFG/menu.xml" ]]; then
@@ -94,7 +117,7 @@ cat > "$tmpfile" <<'EOF'
 Name=Tres
 Comment=Three-square minimalist Wayland desktop
 Exec=/usr/local/bin/tres-session
-TryExec=/usr/bin/labwc
+TryExec=labwc
 Type=Application
 DesktopNames=labwc
 X-Tres=true

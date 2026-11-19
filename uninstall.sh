@@ -10,17 +10,17 @@ DEST="$HOME/.local/share/tres"
 
 if command -v dpkg-query >/dev/null 2>&1 &&
    dpkg-query -W -f='${Status}' tres 2>/dev/null | grep -qx 'install ok installed'; then
-    echo 'Tres is managed by dpkg. Remove it with: sudo apt remove tres' >&2
+    echo 'Tres is managed by dpkg. Remove it with your distribution package manager.' >&2
     exit 1
 fi
 
 if [[ -f "$SESSION" ]] && grep -qx 'X-Tres=true' "$SESSION" &&
-   ! dpkg-query -S "$SESSION" >/dev/null 2>&1; then
+   ! { command -v dpkg-query >/dev/null 2>&1 && dpkg-query -S "$SESSION" >/dev/null 2>&1; }; then
     sudo rm -- "$SESSION"
 fi
 if [[ -f "$WRAPPER" ]] &&
    grep -Eq '^# (Tres-managed session launcher|A standalone session|A dedicated session)' "$WRAPPER" &&
-   ! dpkg-query -S "$WRAPPER" >/dev/null 2>&1; then
+   ! { command -v dpkg-query >/dev/null 2>&1 && dpkg-query -S "$WRAPPER" >/dev/null 2>&1; }; then
     sudo rm -- "$WRAPPER"
 fi
 

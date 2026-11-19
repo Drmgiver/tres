@@ -44,4 +44,4 @@ unset WAYLAND_DISPLAY WAYLAND_SOCKET DISPLAY
 
 # -d is Labwc's supported verbose debug option. Redirect both streams so
 # another black screen leaves a useful record after reboot.
-exec /usr/bin/labwc -d -C "$HOME/.config/tres/labwc" >> "$log" 2>&1
+exec labwc -d -C "$HOME/.config/tres/labwc" >> "$log" 2>&1
