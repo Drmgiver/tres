@@ -274,6 +274,26 @@ Then log out, choose **Tres** at your login screen, and sign in.
 If no login session selector is visible, check your display manager's UI.
 Your other installed desktop sessions remain available.
 
+## Manual source installation on non-APT distributions
+
+Tres's desktop code does not require APT. On Fedora, openSUSE, or another
+distribution, install the equivalent dependencies through the distribution's
+own package manager first, then run:
+
+```bash
+bash install.sh --skip-deps
+```
+
+This mode never runs APT. It checks for Labwc, wlrctl, foot, swaybg, Grim,
+Slurp, wlr-randr, lxpolkit, system Python 3, and its GTK3/GtkLayerShell GI
+bindings *before* changing the session installation. It still requires
+`sudo` to install the login-session entry and wrapper.
+
+**This is an advanced source-install route, not a declaration of validated
+Fedora/openSUSE support.** Package names, availability, desktop portals, and
+runtime integration differ across distributions; those need separate build
+and login testing. Prefer a native distribution package when available.
+
 ## Upgrading an existing Tres-Labwc installation
 
 If you previously installed Tres from the old `tres-labwc` repository,
