@@ -19,7 +19,7 @@ install -m 0755 "$ROOT/scripts/tres-panel-supervisor.sh" "$BIN/tres-panel-superv
 cat > "$BIN/tres-panel-control" <<'EOF'
 #!/bin/sh
 # Tres-managed launcher
-exec /usr/bin/python3 "$HOME/.local/share/tres/tres_panel_control.py" "$@"
+exec python3 "$HOME/.local/share/tres/tres_panel_control.py" "$@"
 EOF
 chmod 0755 "$BIN/tres-panel-control"
 
@@ -30,7 +30,7 @@ if [[ -f "$AUTOSTART" && ! -L "$AUTOSTART" ]] &&
     if [[ ! -e "$AUTOSTART.before-tres-supervisor" ]]; then
         cp -p -- "$AUTOSTART" "$AUTOSTART.before-tres-supervisor"
     fi
-    /usr/bin/python3 - "$AUTOSTART" <<'PY'
+    python3 - "$AUTOSTART" <<'PY'
 import sys
 from pathlib import Path
 p = Path(sys.argv[1])
@@ -43,7 +43,7 @@ if new != old:
     p.write_text(new, encoding="utf-8")
 PY
 fi
-/usr/bin/python3 - "$ROOT/src" "$CFG/menu.xml" <<'PY'
+python3 - "$ROOT/src" "$CFG/menu.xml" <<'PY'
 import sys
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
